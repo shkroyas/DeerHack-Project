@@ -237,27 +237,6 @@ class BehaviorLSTM(nn.Module):
         return ((x - recon) ** 2).mean(dim=(1, 2))
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SEQUENCE DATASET
-# ═══════════════════════════════════════════════════════════════════════════════
-
-class BehaviorSequenceDataset(Dataset):
-    """
-    PyTorch Dataset wrapping a numpy array of behavioral sequences.
-
-    Args:
-        sequences: ndarray of shape (n_samples, seq_len, input_size).
-    """
-
-    def __init__(self, sequences: np.ndarray):
-        self.data = torch.tensor(sequences, dtype=torch.float32)
-
-    def __len__(self) -> int:
-        return len(self.data)
-
-    def __getitem__(self, idx: int) -> torch.Tensor:
-        return self.data[idx]
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SYNTHETIC DATA GENERATOR
@@ -426,323 +405,6 @@ SCENARIO_MITRE = {
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# BEHAVIOR AGENT TRAINER
-# ═══════════════════════════════════════════════════════════════════════════════
-
-class BehaviorAgentTrainer:
-    """
-    Trains and persists the BiLSTM autoencoder.
-
-    Training is entirely unsupervised with respect to attacks.
-    The model is fitted only on normal behavioral sequences.
-    The threshold is the 95th percentile of training errors.
-
-    This means:
-      Any attack type — including one never seen before — can be detected
-      as long as it deviates from the learned normal distribution.
-      No attack labels are required for training.
-      Adding new attack types does NOT require retraining.
-    """
-
-    MODEL_FILE     = "behavior_model.pt"
-    THRESHOLD_FILE = "behavior_threshold.pkl"
-    SCALER_FILE    = "behavior_scaler.pkl"
-    METRICS_FILE   = "behavior_metrics.pkl"
-
-    def __init__(
-        self,
-        models_dir: Path = MODELS_DIR,
-        device:     str  = "auto",
-    ):
-        self.models_dir = Path(models_dir)
-        self.models_dir.mkdir(parents=True, exist_ok=True)
-
-        if device == "auto":
-            self.device = torch.device(
-                "cuda" if torch.cuda.is_available() else "cpu"
-            )
-        else:
-            self.device = torch.device(device)
-
-        self.model:      Optional[BehaviorLSTM] = None
-        self.threshold:  float                  = 0.0
-        self.metrics:    Dict                   = {}
-        self._feat_mean: Optional[np.ndarray]   = None
-        self._feat_std:  Optional[np.ndarray]   = None
-
-        logger.info(f"BehaviorAgentTrainer: device={self.device}")
-
-    def train(
-        self,
-        n_users:         int   = 500,
-        n_per_user:      int   = 20,
-        n_attack_per_sc: int   = 30,
-        epochs:          int   = 30,
-        batch_size:      int   = 64,
-        lr:              float = 1e-3,
-        val_split:       float = 0.15,
-        patience:        int   = 5,
-    ) -> Dict:
-        """
-        Train BiLSTM on normal sequences only, then evaluate.
-
-        Args:
-            n_users:         Normal users to simulate.
-            n_per_user:      Sequences per normal user.
-            n_attack_per_sc: Attack sequences per scenario (eval only).
-            epochs:          Max training epochs.
-            batch_size:      Mini-batch size.
-            lr:              Adam learning rate.
-            val_split:       Fraction held out for validation.
-            patience:        Early stopping patience.
-
-        Returns:
-            Dict with fpr, overall_dr, scenario_dr, threshold.
-        """
-        logger.info(
-            f"BehaviorAgentTrainer: generating data "
-            f"(n_users={n_users}, n_per_user={n_per_user}) …"
-        )
-        gen = BehaviorDataGenerator(seed=42)
-
-        # Step 1: generate data
-        normal_seqs = gen.generate_normal(
-            n_users=n_users, n_per_user=n_per_user
-        )
-        attack_seqs, attack_labels = gen.generate_attacks(
-            n_per_scenario=n_attack_per_sc
-        )
-        logger.info(
-            f"  Normal: {len(normal_seqs):,}  |  "
-            f"Attack: {len(attack_seqs):,} (eval only)"
-        )
-
-        # Step 2: per-feature normalisation from normal data only
-        flat            = normal_seqs.reshape(-1, BEHAVIOR_INPUT_SIZE)
-        self._feat_mean = flat.mean(axis=0).astype(np.float32)
-        self._feat_std  = flat.std(axis=0).astype(np.float32)
-        self._feat_std  = np.where(self._feat_std < 1e-8, 1.0, self._feat_std)
-
-        normal_norm = (normal_seqs - self._feat_mean) / self._feat_std
-        attack_norm = (attack_seqs - self._feat_mean) / self._feat_std
-
-        # Step 3: train/val split on normal data
-        n_total   = len(normal_norm)
-        n_val     = max(1, int(n_total * val_split))
-        idx       = np.random.default_rng(42).permutation(n_total)
-        train_seqs = normal_norm[idx[n_val:]]
-        val_seqs   = normal_norm[idx[:n_val]]
-        logger.info(
-            f"  Train: {len(train_seqs):,}  |  Val: {len(val_seqs):,}"
-        )
-
-        # Step 4: DataLoaders
-        train_loader = DataLoader(
-            BehaviorSequenceDataset(train_seqs),
-            batch_size=batch_size, shuffle=True, drop_last=False,
-        )
-        val_loader = DataLoader(
-            BehaviorSequenceDataset(val_seqs),
-            batch_size=batch_size, shuffle=False,
-        )
-
-        # Step 5: model + optimizer
-        self.model = BehaviorLSTM(
-            input_size  = BEHAVIOR_INPUT_SIZE,
-            hidden_size = BEHAVIOR_HIDDEN_SIZE,
-            num_layers  = BEHAVIOR_NUM_LAYERS,
-            dropout     = BEHAVIOR_DROPOUT,
-        ).to(self.device)
-
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
-        criterion = nn.MSELoss()
-
-        # Step 6: training loop with early stopping
-        best_val   = float("inf")
-        patience_c = 0
-        best_state = None
-        train_hist: List[float] = []
-        val_hist:   List[float] = []
-
-        for epoch in range(1, epochs + 1):
-            self.model.train()
-            t_loss = 0.0
-            for batch in train_loader:
-                batch = batch.to(self.device)
-                optimizer.zero_grad()
-                loss  = criterion(self.model(batch), batch)
-                loss.backward()
-                nn.utils.clip_grad_norm_(
-                    self.model.parameters(), max_norm=1.0
-                )
-                optimizer.step()
-                t_loss += loss.item() * len(batch)
-            t_loss /= len(train_seqs)
-            train_hist.append(t_loss)
-
-            self.model.eval()
-            v_loss = 0.0
-            with torch.no_grad():
-                for batch in val_loader:
-                    batch  = batch.to(self.device)
-                    v_loss += criterion(
-                        self.model(batch), batch
-                    ).item() * len(batch)
-            v_loss /= len(val_seqs)
-            val_hist.append(v_loss)
-
-            if epoch % 5 == 0 or epoch == epochs:
-                logger.info(
-                    f"  Epoch {epoch:3d}/{epochs} | "
-                    f"train={t_loss:.6f} | val={v_loss:.6f}"
-                )
-
-            if v_loss < best_val - 1e-6:
-                best_val   = v_loss
-                patience_c = 0
-                best_state = {
-                    k: v.clone()
-                    for k, v in self.model.state_dict().items()
-                }
-            else:
-                patience_c += 1
-                if patience_c >= patience:
-                    logger.info(
-                        f"  Early stopping at epoch {epoch} "
-                        f"(best_val={best_val:.6f})"
-                    )
-                    if best_state:
-                        self.model.load_state_dict(best_state)
-                    break
-
-        # Step 7: threshold from training errors (95th percentile)
-        self.model.eval()
-        all_errors: List[float] = []
-        with torch.no_grad():
-            for batch in DataLoader(
-                BehaviorSequenceDataset(train_seqs),
-                batch_size=256, shuffle=False,
-            ):
-                batch  = batch.to(self.device)
-                errors = self.model.reconstruction_error(batch)
-                all_errors.extend(errors.cpu().numpy().tolist())
-
-        self.threshold = float(
-            np.percentile(all_errors, BEHAVIOR_ANOMALY_PERCENTILE)
-        )
-        logger.info(
-            f"  Threshold ({BEHAVIOR_ANOMALY_PERCENTILE}th pct of "
-            f"{len(all_errors):,} normal errors): {self.threshold:.6f}"
-        )
-
-        # Step 8: evaluate
-        eval_metrics = self._evaluate(val_seqs, attack_norm, attack_labels)
-        self.metrics = {
-            "best_val_loss": best_val,
-            "threshold":     self.threshold,
-            "train_history": train_hist,
-            "val_history":   val_hist,
-            **eval_metrics,
-        }
-
-        self._print_c1_proof_table(eval_metrics)
-        self.save()
-        return self.metrics
-
-    def save(self) -> None:
-        """Persist model weights, threshold, and feature scaler."""
-        base = self.models_dir
-        if self.model is not None:
-            torch.save(self.model.state_dict(), base / self.MODEL_FILE)
-        with open(base / self.THRESHOLD_FILE, "wb") as f:
-            pickle.dump(self.threshold, f)
-        with open(base / self.SCALER_FILE, "wb") as f:
-            pickle.dump(
-                {"feat_mean": self._feat_mean, "feat_std": self._feat_std}, f
-            )
-        with open(base / self.METRICS_FILE, "wb") as f:
-            pickle.dump(self.metrics, f)
-        logger.info(f"BehaviorAgentTrainer: saved to {base}")
-
-    # ── Private ────────────────────────────────────────────────────────────────
-
-    def _evaluate(
-        self,
-        val_seqs:      np.ndarray,
-        attack_seqs:   np.ndarray,
-        attack_labels: np.ndarray,
-    ) -> Dict:
-        """FPR on normal val set + DR per attack scenario (Table IX)."""
-        self.model.eval()
-
-        def get_errors(seqs: np.ndarray) -> np.ndarray:
-            errors = []
-            with torch.no_grad():
-                for batch in DataLoader(
-                    BehaviorSequenceDataset(seqs),
-                    batch_size=256, shuffle=False,
-                ):
-                    batch = batch.to(self.device)
-                    errors.extend(
-                        self.model.reconstruction_error(batch)
-                        .cpu().numpy().tolist()
-                    )
-            return np.array(errors)
-
-        normal_errors = get_errors(val_seqs)
-        fpr = float((normal_errors > self.threshold).sum()) / max(
-            len(normal_errors), 1
-        )
-
-        attack_errors = get_errors(attack_seqs)
-        scenario_dr: Dict[str, float] = {}
-        for sc_idx, sc_name in enumerate(SCENARIO_NAMES):
-            mask = attack_labels == sc_idx
-            if not mask.any():
-                continue
-            sc_errs = attack_errors[mask]
-            scenario_dr[sc_name] = float(
-                (sc_errs > self.threshold).sum()
-            ) / len(sc_errs)
-
-        overall_dr = float(
-            (attack_errors > self.threshold).sum()
-        ) / max(len(attack_errors), 1)
-
-        return {
-            "fpr":             fpr,
-            "overall_dr":      overall_dr,
-            "scenario_dr":     scenario_dr,
-            "n_normal_eval":   len(normal_errors),
-            "n_attack_eval":   len(attack_errors),
-        }
-
-    def _print_c1_proof_table(self, metrics: Dict) -> None:
-        lines = [
-            "",
-            "═" * 62,
-            "CHALLENGE C1 PROOF — Zero-Day UEBA Detection (cf. Table IX)",
-            "═" * 62,
-            f"  FPR (normal sequences): {metrics['fpr']:.1%}",
-            f"  Overall DR (all attacks): {metrics['overall_dr']:.1%}",
-            "",
-            f"  {'Scenario':<25} {'DR':>8}  {'MITRE':>12}",
-            "  " + "─" * 48,
-        ]
-        for sc, dr in metrics.get("scenario_dr", {}).items():
-            mitre = SCENARIO_MITRE.get(sc, "—")
-            lines.append(f"  {sc:<25} {dr:>8.1%}  {mitre:>12}")
-        lines += [
-            "═" * 62,
-            "  * Trained on NORMAL sequences ONLY.",
-            "  * Zero attack signatures used.",
-            "═" * 62,
-        ]
-        for line in lines:
-            logger.info(line)
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
 # BEHAVIOR AGENT (INFERENCE)
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -784,9 +446,9 @@ class BehaviorAgent:
         """
         base = Path(models_dir)
         for fname in [
-            BehaviorAgentTrainer.MODEL_FILE,
-            BehaviorAgentTrainer.THRESHOLD_FILE,
-            BehaviorAgentTrainer.SCALER_FILE,
+            "behavior_model.pt",
+            "behaviour_threshold.pkl",
+            "behaviour_scaler.pkl",
         ]:
             if not (base / fname).exists():
                 raise FileNotFoundError(
@@ -806,16 +468,16 @@ class BehaviorAgent:
             dropout     = BEHAVIOR_DROPOUT,
         )
         state = torch.load(
-            base / BehaviorAgentTrainer.MODEL_FILE,
+            base / "behavior_model.pt",
             map_location=dev,
             weights_only=True,
         )
         model.load_state_dict(state)
         model.eval()
 
-        with open(base / BehaviorAgentTrainer.THRESHOLD_FILE, "rb") as f:
+        with open(base / "behaviour_threshold.pkl", "rb") as f:
             threshold = pickle.load(f)
-        with open(base / BehaviorAgentTrainer.SCALER_FILE, "rb") as f:
+        with open(base / "behaviour_scaler.pkl", "rb") as f:
             scaler = pickle.load(f)
 
         logger.info(

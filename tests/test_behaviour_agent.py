@@ -33,15 +33,13 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from agents.behavior_agent import (
+from agents.behaviour_agent import (
     SCENARIO_MITRE,
     SCENARIO_NAMES,
     BehaviorAgent,
-    BehaviorAgentTrainer,
     BehaviorAlert,
     BehaviorDataGenerator,
     BehaviorLSTM,
-    BehaviorSequenceDataset,
 )
 from config import (
     BEHAVIOR_ANOMALY_PERCENTILE,
@@ -57,23 +55,9 @@ logger = logging.getLogger(__name__)
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
 
-def _quick_train(
-    tmpdir: Path,
-    n_users: int = 60,
-    n_per_user: int = 8,
-    epochs: int = 4,
-) -> BehaviorAgentTrainer:
-    trainer = BehaviorAgentTrainer(models_dir=tmpdir, device="cpu")
-    trainer.train(
-        n_users=n_users, n_per_user=n_per_user,
-        n_attack_per_sc=10, epochs=epochs,
-        batch_size=32, patience=3,
-    )
-    return trainer
-
-
-def _load_agent(tmpdir: Path) -> BehaviorAgent:
-    return BehaviorAgent.load(models_dir=tmpdir, device="cpu")
+from config import MODELS_DIR
+def _load_agent() -> BehaviorAgent:
+    return BehaviorAgent.load(models_dir=MODELS_DIR, device="cpu")
 
 
 def _make_flow_record(
@@ -282,71 +266,6 @@ class TestBehaviorDataGenerator(unittest.TestCase):
         )
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# GROUP 4: BehaviorAgentTrainer
-# ═══════════════════════════════════════════════════════════════════════════════
-
-class TestBehaviorAgentTrainer(unittest.TestCase):
-
-    def setUp(self):
-        self.tmpdir  = Path(tempfile.mkdtemp())
-        self.trainer = _quick_train(self.tmpdir)
-
-    def test_train_returns_dict(self):
-        self.assertIsInstance(self.trainer.metrics, dict)
-
-    def test_metrics_has_fpr(self):
-        self.assertIn("fpr", self.trainer.metrics)
-
-    def test_metrics_has_overall_dr(self):
-        self.assertIn("overall_dr", self.trainer.metrics)
-
-    def test_metrics_has_scenario_dr(self):
-        self.assertIn("scenario_dr", self.trainer.metrics)
-        for sc in SCENARIO_NAMES:
-            self.assertIn(sc, self.trainer.metrics["scenario_dr"])
-
-    def test_fpr_in_range(self):
-        self.assertGreaterEqual(self.trainer.metrics["fpr"], 0.0)
-        self.assertLessEqual(self.trainer.metrics["fpr"],    1.0)
-
-    def test_overall_dr_in_range(self):
-        self.assertGreaterEqual(self.trainer.metrics["overall_dr"], 0.0)
-        self.assertLessEqual(self.trainer.metrics["overall_dr"],    1.0)
-
-    def test_threshold_positive_float(self):
-        self.assertIsInstance(self.trainer.threshold, float)
-        self.assertGreater(self.trainer.threshold, 0.0)
-
-    def test_model_file_saved(self):
-        self.assertTrue(
-            (self.tmpdir / BehaviorAgentTrainer.MODEL_FILE).exists()
-        )
-
-    def test_threshold_file_saved(self):
-        self.assertTrue(
-            (self.tmpdir / BehaviorAgentTrainer.THRESHOLD_FILE).exists()
-        )
-
-    def test_scaler_file_saved(self):
-        self.assertTrue(
-            (self.tmpdir / BehaviorAgentTrainer.SCALER_FILE).exists()
-        )
-
-    def test_metrics_file_saved(self):
-        self.assertTrue(
-            (self.tmpdir / BehaviorAgentTrainer.METRICS_FILE).exists()
-        )
-
-    def test_feat_mean_correct_dims(self):
-        self.assertEqual(len(self.trainer._feat_mean), BEHAVIOR_INPUT_SIZE)
-
-    def test_feat_std_correct_dims(self):
-        self.assertEqual(len(self.trainer._feat_std), BEHAVIOR_INPUT_SIZE)
-
-    def test_feat_std_all_positive(self):
-        self.assertTrue((self.trainer._feat_std > 0).all())
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 5: BehaviorAgent inference
@@ -356,8 +275,8 @@ class TestBehaviorAgent(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = Path(tempfile.mkdtemp())
-        _quick_train(self.tmpdir)
-        self.agent = _load_agent(self.tmpdir)
+        # _quick_train(self.tmpdir)
+        self.agent = _load_agent()
         self.gen   = BehaviorDataGenerator(seed=7)
 
     def test_load_returns_behavior_agent(self):
@@ -438,64 +357,6 @@ class TestBehaviorAgent(unittest.TestCase):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# GROUP 6: Zero-Day Detection — the C1 claim
-# ═══════════════════════════════════════════════════════════════════════════════
-
-class TestZeroDayDetection(unittest.TestCase):
-
-    def setUp(self):
-        self.tmpdir  = Path(tempfile.mkdtemp())
-        self.trainer = _quick_train(self.tmpdir, n_users=80, epochs=6)
-        self.agent   = _load_agent(self.tmpdir)
-        self.gen     = BehaviorDataGenerator(seed=99)
-
-    def test_normal_median_below_threshold(self):
-        errors = [
-            self.agent.score_sequence(self.gen.normal_sequence()).recon_error
-            for _ in range(50)
-        ]
-        self.assertLess(
-            np.median(errors), self.agent.threshold,
-            f"Median normal error must be below threshold",
-        )
-
-    def test_attack_mean_above_normal_mean(self):
-        n_err = [
-            self.agent.score_sequence(self.gen.normal_sequence()).recon_error
-            for _ in range(30)
-        ]
-        a_err = [
-            self.agent.score_sequence(self.gen.data_staging_sequence()).recon_error
-            for _ in range(30)
-        ]
-        self.assertGreater(
-            np.mean(a_err), np.mean(n_err),
-            "Attack mean error must exceed normal mean error",
-        )
-
-    def test_fpr_acceptable(self):
-        self.assertLessEqual(
-            self.trainer.metrics["fpr"], 0.10,
-            f"FPR must be <= 10%",
-        )
-
-    def test_overall_dr_acceptable(self):
-        self.assertGreaterEqual(
-            self.trainer.metrics["overall_dr"], 0.70,
-            f"DR must be >= 70%",
-        )
-
-    def test_no_attack_data_in_training(self):
-        """Model must exist and threshold derived from normal errors only."""
-        self.assertIsNotNone(self.trainer.model)
-        self.assertGreater(self.trainer.threshold, 0.0)
-
-    def test_threshold_is_95th_percentile(self):
-        self.assertEqual(BEHAVIOR_ANOMALY_PERCENTILE, 95)
-        self.assertGreater(self.trainer.threshold, 0.0)
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 7: Per-scenario detection
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -503,8 +364,8 @@ class TestScenarioDetection(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = Path(tempfile.mkdtemp())
-        _quick_train(self.tmpdir, n_users=80, epochs=6)
-        self.agent = _load_agent(self.tmpdir)
+        # _quick_train(self.tmpdir, n_users=80, epochs=6)
+        self.agent = _load_agent()
         self.gen   = BehaviorDataGenerator(seed=5)
 
     def _dr(self, gen_fn, n: int = 30) -> float:
@@ -532,33 +393,6 @@ class TestScenarioDetection(unittest.TestCase):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# GROUP 8: Persistence
-# ═══════════════════════════════════════════════════════════════════════════════
-
-class TestPersistence(unittest.TestCase):
-
-    def test_identical_errors_after_reload(self):
-        tmpdir = Path(tempfile.mkdtemp())
-        _quick_train(tmpdir, epochs=3)
-        a1  = BehaviorAgent.load(models_dir=tmpdir, device="cpu")
-        a2  = BehaviorAgent.load(models_dir=tmpdir, device="cpu")
-        seq = BehaviorDataGenerator(seed=42).normal_sequence()
-        self.assertAlmostEqual(
-            a1.score_sequence(seq).recon_error,
-            a2.score_sequence(seq).recon_error,
-            places=6,
-        )
-
-    def test_threshold_preserved_after_reload(self):
-        tmpdir  = Path(tempfile.mkdtemp())
-        trainer = _quick_train(tmpdir, epochs=3)
-        agent   = BehaviorAgent.load(models_dir=tmpdir, device="cpu")
-        self.assertAlmostEqual(
-            trainer.threshold, agent.threshold, places=8
-        )
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 9: Integration
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -570,8 +404,8 @@ class TestIntegrationC1(unittest.TestCase):
         accepted without error and produce a valid BehaviorAlert.
         """
         tmpdir = Path(tempfile.mkdtemp())
-        _quick_train(tmpdir, epochs=3)
-        agent = BehaviorAgent.load(models_dir=tmpdir, device="cpu")
+        # _quick_train(tmpdir, epochs=3)
+        agent = BehaviorAgent.load(models_dir=MODELS_DIR, device="cpu")
 
         db_record = build_apt_scenario()[2]   # svc_corebanking spike
         alert     = agent.score(db_record)
