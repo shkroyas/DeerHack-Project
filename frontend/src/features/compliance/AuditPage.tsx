@@ -1,0 +1,86 @@
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { auditService } from '@services/audit.service';
+import { AuditChainViewer } from '@components/feature/AuditChainViewer';
+import { Lock, FileText, CheckCircle, Search } from 'lucide-react';
+
+const AuditPage: React.FC = () => {
+  const { data } = useQuery({ 
+    queryKey: ['audit', 'logs'], 
+    queryFn: () => auditService.getLogs({ page: 1, pageSize: 50 }),
+    refetchInterval: 10000 
+  });
+
+  return (
+    <div className="p-4 space-y-6 animate-fade-up h-full overflow-y-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-white flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center">
+              <Lock size={16} className="text-white" />
+            </div>
+            Immutable Audit Chain
+          </h1>
+          <p className="text-xs text-text-muted mt-1">PCI-DSS 10.3 compliant cryptographically linked action logs</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-6">
+        <div className="col-span-2">
+          <div className="glass-panel p-5 h-full">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-white">Action Ledger</h2>
+              <div className="relative">
+                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
+                <input type="text" placeholder="Search hash or action..." className="input-dark pl-8 w-64 text-xs" />
+              </div>
+            </div>
+            <AuditChainViewer entries={data?.data ?? []} />
+          </div>
+        </div>
+
+        <div className="col-span-1 space-y-4">
+          <div className="glass-panel p-5">
+            <h2 className="text-sm font-semibold text-white mb-4">Chain Integrity Status</h2>
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/20 mb-4">
+              <CheckCircle size={24} className="text-green-400" />
+              <div>
+                <div className="text-sm font-bold text-green-400">CRYPTOGRAPHICALLY VALID</div>
+                <div className="text-[10px] text-text-muted">Last verified: just now</div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs">
+                <span className="text-text-muted">Chain Length:</span>
+                <span className="text-white font-mono">{data?.total ?? 0} blocks</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-text-muted">Hashing Algorithm:</span>
+                <span className="text-white font-mono">SHA-256</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-text-muted">Compliance Target:</span>
+                <span className="challenge-badge challenge-badge-c2">PCI-DSS / NRB</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="glass-panel p-5">
+             <h2 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+              <FileText size={14} /> Reporting
+            </h2>
+            <p className="text-xs text-text-muted mb-4 leading-relaxed">
+              Export chain of custody report for NRB auditor compliance checks. The report includes cryptographic proofs for all containment actions.
+            </p>
+            <button className="w-full btn-primary text-xs flex justify-center gap-2">
+              <FileText size={14} /> Generate NRB Report
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AuditPage;

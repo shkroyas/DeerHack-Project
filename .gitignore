@@ -29,3 +29,17 @@ forensics/
 # IDEs
 .vscode/
 .idea/
+
+# Local secrets and packaged artifacts
+.env
+*.zip
+scratch/
+
+# Frontend build output and local env files
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local

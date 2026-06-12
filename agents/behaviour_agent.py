@@ -544,6 +544,12 @@ class BehaviorAgent:
         seq = np.array(sequence, dtype=np.float32)
         if seq.ndim == 2:
             seq = seq[np.newaxis, :]
+            
+        if seq.shape[2] != self._feat_mean.shape[0]:
+            raise ValueError(
+                f"Behavior sequence must have {self._feat_mean.shape[0]} features per timestep, "
+                f"but got {seq.shape[2]}."
+            )
 
         seq_norm = (seq - self._feat_mean) / self._feat_std
         tensor   = torch.tensor(seq_norm, dtype=torch.float32).to(self._device)

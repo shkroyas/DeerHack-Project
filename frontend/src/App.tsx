@@ -1,0 +1,115 @@
+import React, { Suspense } from 'react';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
+import { STRINGS, ROLE } from '@lib/constants';
+import { ErrorFallback } from '@components/common/ErrorFallback';
+import { AppShell } from '@components/layout/AppShell';
+import { ProtectedRoute } from '@components/layout/ProtectedRoute';
+
+const LoginPage = React.lazy(() => import('@features/auth/LoginPage'));
+const DashboardPage = React.lazy(() => import('@features/dashboard/DashboardPage'));
+const AlertsPage = React.lazy(() => import('@features/alerts/AlertsPage'));
+const ThreatIntelPage = React.lazy(() => import('@features/intel/ThreatIntelPage'));
+const AuditPage = React.lazy(() => import('@features/compliance/AuditPage'));
+const SettingsPage = React.lazy(() => import('@features/settings/SettingsPage'));
+const RedTeamPage = React.lazy(() => import('@features/redteam/RedTeamPage'));
+const SOCAssistantPage = React.lazy(() => import('@features/soc/SOCAssistantPage'));
+
+const ErrorPage = () => (
+  <div className="p-6">
+    <ErrorFallback error={new Error(STRINGS.ERRORS.SERVICE_UNAVAILABLE)} resetErrorBoundary={() => window.location.reload()} />
+  </div>
+);
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <AppShell />,
+    errorElement: <ErrorPage />,
+    children: [
+      { index: true, element: <Navigate to="/dashboard" replace /> },
+      {
+        path: 'dashboard',
+        element: (
+          <ProtectedRoute allowedRoles={[ROLE.SOC_ANALYST, ROLE.COMPLIANCE_OFFICER, ROLE.ADMIN]}>
+            <Suspense fallback={<div>Loading...</div>}>
+              <DashboardPage />
+            </Suspense>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'alerts',
+        element: (
+          <ProtectedRoute allowedRoles={[ROLE.SOC_ANALYST, ROLE.COMPLIANCE_OFFICER, ROLE.ADMIN]}>
+            <Suspense fallback={<div>Loading...</div>}>
+              <AlertsPage />
+            </Suspense>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'intel',
+        element: (
+          <ProtectedRoute allowedRoles={[ROLE.SOC_ANALYST, ROLE.COMPLIANCE_OFFICER, ROLE.ADMIN]}>
+            <Suspense fallback={<div>Loading...</div>}>
+              <ThreatIntelPage />
+            </Suspense>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'audit',
+        element: (
+          <ProtectedRoute allowedRoles={[ROLE.COMPLIANCE_OFFICER, ROLE.ADMIN]}>
+            <Suspense fallback={<div>Loading...</div>}>
+              <AuditPage />
+            </Suspense>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'settings',
+        element: (
+          <ProtectedRoute allowedRoles={[ROLE.ADMIN]}>
+            <Suspense fallback={<div>Loading...</div>}>
+              <SettingsPage />
+            </Suspense>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'redteam',
+        element: (
+          <ProtectedRoute allowedRoles={[ROLE.SOC_ANALYST, ROLE.COMPLIANCE_OFFICER, ROLE.ADMIN]}>
+            <Suspense fallback={<div>Loading...</div>}>
+              <RedTeamPage />
+            </Suspense>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'soc',
+        element: (
+          <ProtectedRoute allowedRoles={[ROLE.SOC_ANALYST, ROLE.COMPLIANCE_OFFICER, ROLE.ADMIN]}>
+            <Suspense fallback={<div>Loading...</div>}>
+              <SOCAssistantPage />
+            </Suspense>
+          </ProtectedRoute>
+        )
+      }
+    ]
+  },
+  {
+    path: '/login',
+    element: (
+      <Suspense fallback={<div>Loading...</div>}>
+        <LoginPage />
+      </Suspense>
+    )
+  },
+  { path: '/unauthorized', element: <div>{STRINGS.ERRORS.INVALID_CREDENTIALS}</div> }
+]);
+
+export default function App(): JSX.Element {
+  return <RouterProvider router={router} />;
+}
