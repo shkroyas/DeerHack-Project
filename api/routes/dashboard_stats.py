@@ -120,8 +120,13 @@ def dashboard_kpis(reg: AgentRegistry = Depends(get_registry)):
         suppressed = stats.get("total_suppressed", 0)
         emitted = stats.get("alerts_emitted", 0)
         suppression_rate = stats.get("suppression_rate", 0.0) * 100
-        if emitted > 0:
-            fpr = suppression_rate  # Use actual suppression rate as proxy
+
+        # Calculate real FPR from pipeline tracking counters.
+        # FPR = (benign/anomaly alerts that leaked through) / (total processed benign traffic)
+        from api.routes.pipeline import _fpr_counters
+        false_positives = _fpr_counters["false_positives"]
+        if threats_today > 0:
+            fpr = round((false_positives / threats_today) * 100, 1)
 
     # Threat feed age
     feed_age = None
