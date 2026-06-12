@@ -32,7 +32,7 @@ export const AlertTable: React.FC<Props> = ({ alerts, onAlertClick }) => {
             <SeverityIndicator severity={a.severity} />
             <span className="text-xs text-text.secondary">{new Date(a.timestamp).toLocaleString()}</span>
             <span className="text-xs text-text.secondary font-mono">{a.sourceIp}</span>
-            <span>{a.mitre ? <MITRETag technique={a.mitre} /> : <span className="text-xs text-text.secondary">-</span>}</span>
+            <span><MITRETag technique={a.mitre} severity={a.severity} /></span>
             <CRSGauge value={a.crs} />
             <span className="text-xs text-text.secondary">OPEN</span>
           </button>

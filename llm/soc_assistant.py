@@ -29,9 +29,7 @@ from config import GEMINI_API_KEYS
 logger = logging.getLogger(__name__)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # SYSTEM PROMPT — Nepal banking SOC context
-# ═══════════════════════════════════════════════════════════════════════════════
 
 SYSTEM_PROMPT = """You are BankSentinel SOC AI — the intelligent assistant for a Nepalese banking intrusion detection system.
 
@@ -57,9 +55,7 @@ RESPONSE GUIDELINES:
 """
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # DEMO QUESTIONS — one per challenge, embedded in UI as quick buttons
-# ═══════════════════════════════════════════════════════════════════════════════
 
 DEMO_QUESTIONS = [
     {
@@ -89,9 +85,7 @@ DEMO_QUESTIONS = [
 ]
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # FALLBACK ANSWERS — used when no Gemini API key is configured
-# ═══════════════════════════════════════════════════════════════════════════════
 
 _FALLBACK_ANSWERS = {
     "c1": (
@@ -170,9 +164,7 @@ _GENERIC_FALLBACK = (
 )
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # SOC ASSISTANT CLASS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class SOCAssistant:
     """

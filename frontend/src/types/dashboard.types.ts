@@ -4,8 +4,17 @@ import { GraphSchema } from './graph.types';
 export const DashboardKpiSchema = z.object({
   threatsToday: z.number(),
   falsePositiveRate: z.number(),
-  intelFeedAgeMin: z.number(),
-  meanResponseTimeMin: z.number()
+  intelFeedAgeMin: z.number().nullable().optional(),
+  meanResponseTimeMin: z.number(),
+  alertsSuppressed: z.number(),
+  alertsEmitted: z.number(),
+  suppressionRate: z.number(),
+  activeRegime: z.string(),
+  regimeDescription: z.string(),
+  uptimeSeconds: z.number(),
+  agentsOnline: z.number(),
+  agentsTotal: z.number(),
+  nepalTime: z.string(),
 });
 
 export const DashboardGraphSchema = GraphSchema;

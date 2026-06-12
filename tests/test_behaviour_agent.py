@@ -85,9 +85,7 @@ def _make_alert(**kwargs) -> BehaviorAlert:
     return BehaviorAlert(**defaults)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 1: BehaviorAlert
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestBehaviorAlert(unittest.TestCase):
 
@@ -122,9 +120,7 @@ class TestBehaviorAlert(unittest.TestCase):
         self.assertEqual(alert.scenario_hint, "data_staging")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 2: BehaviorLSTM
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestBehaviorLSTM(unittest.TestCase):
 
@@ -189,9 +185,7 @@ class TestBehaviorLSTM(unittest.TestCase):
         self.assertGreaterEqual(e2.item(), 0)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 3: BehaviorDataGenerator
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestBehaviorDataGenerator(unittest.TestCase):
 
@@ -267,9 +261,7 @@ class TestBehaviorDataGenerator(unittest.TestCase):
 
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 5: BehaviorAgent inference
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestBehaviorAgent(unittest.TestCase):
 
@@ -356,9 +348,7 @@ class TestBehaviorAgent(unittest.TestCase):
             self.assertIn("zero", alert.explanation.lower())
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 7: Per-scenario detection
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestScenarioDetection(unittest.TestCase):
 
@@ -392,9 +382,7 @@ class TestScenarioDetection(unittest.TestCase):
             self.assertTrue(SCENARIO_MITRE[sc].startswith("T"))
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 9: Integration
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestIntegrationC1(unittest.TestCase):
 

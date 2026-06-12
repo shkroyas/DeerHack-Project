@@ -33,11 +33,9 @@ _keys_env = os.getenv("GEMINI_API_KEYS", "")
 GEMINI_API_KEYS = [k.strip() for k in _keys_env.split(",")] if _keys_env else ([GEMINI_API_KEY] if GEMINI_API_KEY else [])
 OTX_API_KEY    = os.getenv("OTX_API_KEY", "")
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # CHALLENGE C2 — Traffic Regime Contexts
 # Six separate Isolation Forest models prevent false positives during
 # legitimate high-volume banking operations (month-end, ATM recon, RTGS).
-# ═══════════════════════════════════════════════════════════════════════════════
 REGIME_CONTEXTS = {
     "month_end": {
         "contamination": 8e-4,
@@ -74,10 +72,8 @@ REGIME_CONTEXTS = {
 # Nepal is UTC+05:45 = 345 minutes ahead
 NEPAL_UTC_OFFSET_MINUTES = 345
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # CHALLENGE C4 — Encrypted Traffic Detection
 # Three independent layers — all operate without payload decryption.
-# ═══════════════════════════════════════════════════════════════════════════════
 JA3_FEED_URL    = "https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv"
 C2_IP_FEED_URL  = "https://feodotracker.abuse.ch/downloads/ipblocklist.json"
 URLHAUS_API_URL = "https://urlhaus-api.abuse.ch/v1/urls/recent/"
@@ -101,9 +97,7 @@ TOR_EXIT_WEIGHT       = 0.13
 # Feed refresh interval in seconds (30 minutes)
 THREAT_FEED_REFRESH_SEC = 1800
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # CHALLENGE C3 — Alert Fatigue Suppression
-# ═══════════════════════════════════════════════════════════════════════════════
 DEDUP_WINDOW_SEC        = 300    # 5-min sliding deduplication window
 CONFIDENCE_GATE_LOW     = 0.40   # below → queue only, no notification
 CONFIDENCE_GATE_HIGH    = 0.85   # above → automated response triggers
@@ -116,10 +110,8 @@ BBN_PRIOR_THREAT = 3.2e-4
 # [packet, flow, behavior, bayesian]
 CRS_WEIGHTS = [0.28, 0.24, 0.26, 0.22]
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # CHALLENGE C1 — Zero-Day Behavioral Detection
 # BiLSTM autoencoder trained only on NORMAL sequences.
-# ═══════════════════════════════════════════════════════════════════════════════
 BEHAVIOR_SEQUENCE_LENGTH    = 20
 BEHAVIOR_INPUT_SIZE         = 8
 BEHAVIOR_HIDDEN_SIZE        = 128

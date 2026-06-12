@@ -29,9 +29,7 @@ from intel.threat_feed import threat_engine
 from pipeline.ingestion import FlowRecord, FLOW_FEATURES
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # HELPERS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def _flow(src_ip, dst_ip, dst_port=443, ja3=None, ja3s=None,
           dur=5.0, tot_pkts=80, tot_bytes=24000, src_bytes=14000,
@@ -104,9 +102,7 @@ def _inject_intel(engine):
     print("✓ Test threat-intel injected (simulating live feed)")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # TEST SCENARIOS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def create_test_scenarios():
     """
@@ -237,9 +233,7 @@ def create_test_scenarios():
     return scenarios
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # RUNNER
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def run_inference_example():
     print("\n" + "=" * 80)

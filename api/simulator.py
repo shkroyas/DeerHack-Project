@@ -49,7 +49,7 @@ async def traffic_simulator():
     from api.dependencies import get_registry
     from api.routes.pipeline import _run_pipeline_on_record
     
-    reg = next(get_registry())
+    reg = get_registry()
     logger.info("Traffic simulator started.")
     
     ticks = 0
@@ -60,10 +60,26 @@ async def traffic_simulator():
                 rec = _make_random_benign_record()
                 _run_pipeline_on_record(rec, reg)
             
-            # Every ~15 seconds inject an anomaly to show up on the AlertFeed
+            # Every ~15 seconds inject ALL severities
             if ticks % 15 == 0 and ticks > 0:
-                rec = _make_random_anomaly_record()
-                _run_pipeline_on_record(rec, reg)
+                from pipeline.ingestion import build_apt_scenario
+                if reg.threat_engine is not None:
+                    reg.threat_engine._ja3_db[
+                        "0b32309a26951912be7dba376398abc3"
+                    ] = "CobaltStrike"
+                
+                # Collect all demo records (CRITICAL, HIGH, MEDIUM, LOW)
+                apt_records = build_apt_scenario()
+                rec_low = _make_random_anomaly_record()
+                
+                all_demo_records = apt_records + [rec_low]
+                
+                # Shuffle so they appear in random order instead of serially
+                random.shuffle(all_demo_records)
+                
+                for rec in all_demo_records:
+                    _run_pipeline_on_record(rec, reg)
+                    await asyncio.sleep(0.5)
             
             ticks += 1
             await asyncio.sleep(1.0)

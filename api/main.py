@@ -121,6 +121,7 @@ from api.routes.redteam import router as redteam_router
 from api.routes.federation import router as federation_router
 from api.routes.dashboard_stats import router as dashboard_stats_router
 from api.routes.websocket import router as websocket_router
+from api.routes.auth import router as auth_router
 
 app.include_router(health_router)
 app.include_router(packet_router)
@@ -136,6 +137,7 @@ app.include_router(redteam_router)
 app.include_router(federation_router)
 app.include_router(dashboard_stats_router)
 app.include_router(websocket_router)
+app.include_router(auth_router)
 
 
 # ── Root ──────────────────────────────────────────────────────────────────────

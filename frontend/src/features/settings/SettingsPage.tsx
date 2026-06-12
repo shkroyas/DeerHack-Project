@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { agentsService } from '@services/agents.service';
-import { Settings, Shield, Server, Bell, Key, Download } from 'lucide-react';
+import { Settings, Shield, Server, Key, Download } from 'lucide-react';
 import { queryKeys } from '@lib/queryKeys';
 
 const SettingsPage: React.FC = () => {
@@ -68,17 +68,17 @@ const SettingsPage: React.FC = () => {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-text-muted block mb-1">JA3 Fingerprint Feed</label>
-                  <input type="text" className="input-dark w-full" defaultValue="https://ja3er.com/downloads/ja3.json" />
+                  <label htmlFor="nrbNode" className="block text-xs font-semibold text-text-muted uppercase mb-1.5">NRB Node ID</label>
+                  <input id="nrbNode" type="text" className="input-field w-full font-mono text-xs opacity-50" defaultValue="NRB-FED-012" disabled />
                 </div>
                 <div>
-                  <label className="text-xs text-text-muted block mb-1">C2 IP Blocklist</label>
-                  <input type="text" className="input-dark w-full" defaultValue="https://feodotracker.abuse.ch/downloads/ipblocklist.csv" />
+                  <label htmlFor="c2list" className="block text-xs font-semibold text-text-muted uppercase mb-1.5">C2 IP Blocklist</label>
+                  <input id="c2list" type="text" className="input-dark w-full" defaultValue="https://feodotracker.abuse.ch/downloads/ipblocklist.csv" />
                 </div>
               </div>
               <div>
-                <label className="text-xs text-text-muted block mb-1">Sync Interval (Minutes)</label>
-                <input type="number" className="input-dark w-full" defaultValue={30} />
+                <label htmlFor="sync" className="block text-xs font-semibold text-text-muted uppercase mb-1.5">Sync Interval (Minutes)</label>
+                <input id="sync" type="number" className="input-dark w-full" defaultValue={30} />
               </div>
             </div>
           </div>
@@ -89,12 +89,15 @@ const SettingsPage: React.FC = () => {
           <div className="glass-panel p-5">
             <h2 className="text-sm font-semibold text-white mb-4">Agent Status</h2>
             <div className="space-y-3">
-              {(agents ?? []).map((agent: any) => (
-                <div key={agent.id} className="flex items-center justify-between">
-                  <span className="text-xs text-text-secondary">{agent.name}</span>
+              {(agents ?? []).map((agent: Record<string, unknown>) => (
+                <div key={agent.id as string} className="flex items-center justify-between">
+                  <span className="text-xs text-text-secondary">{agent.name as string}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-text-muted font-mono">{agent.eps || 0} EPS</span>
-                    <div className={agent.status === 'ONLINE' ? 'status-dot-online' : 'status-dot-offline'} />
+                    <span className="text-[10px] text-text-muted font-mono">{(agent.eps as number) || 0} EPS</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" className="sr-only peer" defaultChecked={(agent.status as string) === 'ONLINE'} />
+                      <div className="w-9 h-5 bg-background-border peer-checked:bg-success rounded-full peer" />
+                    </label>
                   </div>
                 </div>
               ))}
@@ -107,8 +110,8 @@ const SettingsPage: React.FC = () => {
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="text-xs text-text-muted block mb-1">Gemini API Key (SOC AI)</label>
-                <input type="password" className="input-dark w-full" defaultValue="************************" />
+                <label htmlFor="geminiKey" className="text-xs text-text-muted block mb-1">Gemini API Key (SOC AI)</label>
+                <input id="geminiKey" type="password" className="input-dark w-full" defaultValue="************************" />
               </div>
             </div>
           </div>

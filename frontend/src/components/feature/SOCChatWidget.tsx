@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageSquare, Send, Sparkles, ExternalLink } from 'lucide-react';
+import { Send, Sparkles, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface ChatMessage {

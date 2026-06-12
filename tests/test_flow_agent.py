@@ -89,9 +89,7 @@ def _load_real_agent() -> tuple[FlowAgent, dict[str, pd.DataFrame]]:
     return agent, benign
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # TestFlowAlertDataclass
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestFlowAlertDataclass(unittest.TestCase):
     """FlowAlert fields, defaults, __str__, and C2 proof fields. (8 tests)"""
@@ -152,9 +150,7 @@ class TestFlowAlertDataclass(unittest.TestCase):
         self.assertIn("normal",  s)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # TestFlowAgentInference
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestFlowAgentInference(unittest.TestCase):
     """FlowAgent.score() and score_batch() — output contract and routing. (12 tests)"""
@@ -240,9 +236,7 @@ class TestFlowAgentInference(unittest.TestCase):
                                   msg=f"Record {i} did not produce FlowAlert")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # TestFlowAgentLoad
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestFlowAgentLoad(unittest.TestCase):
     """FlowAgent.load() — missing files raise, round-trip integrity. (7 tests)"""
@@ -294,9 +288,7 @@ class TestFlowAgentLoad(unittest.TestCase):
                               msg=f"Threshold for '{regime}' not loaded in {threshold_type}")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # TestFlowAgentEvaluate
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestFlowAgentEvaluate(unittest.TestCase):
     """FlowAgent.evaluate() — metrics contract for Challenge C2 proof. (5 tests)"""

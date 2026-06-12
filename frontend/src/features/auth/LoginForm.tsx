@@ -1,37 +1,91 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@hooks/useAuth';
+import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 
 const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8)
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters')
 });
 
 type FormValues = z.infer<typeof schema>;
 
 export const LoginForm: React.FC = () => {
   const { login } = useAuth();
-  const { register, handleSubmit, formState } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  const [isLoading, setIsLoading] = useState(false);
+  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({ 
+    resolver: zodResolver(schema) 
+  });
 
   const onSubmit = async (data: FormValues) => {
-    await login(data.email, data.password);
+    setIsLoading(true);
+    try {
+      await login(data.email, data.password);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <label className="block text-sm text-text.secondary">Email</label>
-        <input {...register('email')} className="w-full mt-1 p-2 rounded bg-panel text-text.primary" />
-        {formState.errors.email && <div className="text-xs text-severity-critical mt-1">Invalid email</div>}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <div className="space-y-1">
+        <label htmlFor="email" className="block text-xs font-medium text-slate-400 ml-1">
+          Email Address
+        </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Mail size={16} className="text-slate-500" />
+          </div>
+          <input 
+            id="email" 
+            type="email" 
+            placeholder="analyst@banksentinel.ai"
+            {...register('email')} 
+            className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-transparent transition-all" 
+          />
+        </div>
+        {errors.email && (
+          <p className="text-xs text-red-400 mt-1 ml-1">{errors.email.message}</p>
+        )}
       </div>
-      <div>
-        <label className="block text-sm text-text.secondary">Password</label>
-        <input type="password" {...register('password')} className="w-full mt-1 p-2 rounded bg-panel text-text.primary" />
-        {formState.errors.password && <div className="text-xs text-severity-critical mt-1">Min 8 characters</div>}
+
+      <div className="space-y-1">
+        <label htmlFor="password" className="block text-xs font-medium text-slate-400 ml-1">
+          Password
+        </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Lock size={16} className="text-slate-500" />
+          </div>
+          <input 
+            id="password" 
+            type="password" 
+            placeholder="••••••••"
+            {...register('password')} 
+            className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-transparent transition-all" 
+          />
+        </div>
+        {errors.password && (
+          <p className="text-xs text-red-400 mt-1 ml-1">{errors.password.message}</p>
+        )}
       </div>
-      <button type="submit" className="px-4 py-2 bg-challenge-c3 text-white rounded">Sign in</button>
+
+      <button 
+        type="submit" 
+        disabled={isLoading}
+        className="w-full flex items-center justify-center gap-2 py-2.5 mt-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-lg font-medium shadow-lg shadow-emerald-500/25 transition-all disabled:opacity-70 disabled:cursor-not-allowed group"
+      >
+        {isLoading ? (
+          <Loader2 size={18} className="animate-spin" />
+        ) : (
+          <>
+            Secure Login
+            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          </>
+        )}
+      </button>
     </form>
   );
 };

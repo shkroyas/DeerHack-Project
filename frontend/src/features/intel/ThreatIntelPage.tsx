@@ -10,7 +10,7 @@ const ThreatIntelPage: React.FC = () => {
     refetchInterval: 10000
   });
 
-  const [federation, setFederation] = useState<any>(null);
+  const [federation, setFederation] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
   const [loadingFed, setLoadingFed] = useState(false);
 
   useEffect(() => {
@@ -60,24 +60,21 @@ const ThreatIntelPage: React.FC = () => {
               <div className="text-xs text-text-muted text-center py-4">Loading OSINT feeds...</div>
             ) : (
               <div className="space-y-4">
-                {(feeds ?? []).map((feed: any, i: number) => (
-                  <div key={feed.id} className="p-3 rounded-lg bg-background-elevated border border-background-border">
+                {(feeds ?? []).map((feed: any) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                  <div key={feed.name} className="p-3 rounded-lg bg-background-elevated border border-background-border">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold text-white">{feed.source}</span>
-                      <span className="live-badge live-badge-active">
-                        <span className="status-dot-online" style={{ width: 4, height: 4 }} /> LIVE
+                      <span className="text-xs font-semibold text-white">{feed.name}</span>
+                      <span className={`live-badge ${feed.status === 'LIVE' ? 'live-badge-active' : ''}`}>
+                        <span className={feed.status === 'LIVE' ? "status-dot-online" : "status-dot-offline"} style={{ width: 4, height: 4 }} /> {feed.status}
                       </span>
                     </div>
                     <div className="flex items-center gap-4 mb-2">
                       <div className="text-[10px] text-text-muted">
-                        <span className="font-semibold text-text-secondary">{feed.indicators_count}</span> indicators
-                      </div>
-                      <div className="text-[10px] text-text-muted">
-                        Type: <span className="text-text-secondary">{feed.type}</span>
+                        <span className="font-semibold text-text-secondary">{feed.count}</span> indicators
                       </div>
                     </div>
                     <div className="text-[10px] text-text-muted flex items-center gap-1">
-                      <RefreshCw size={10} /> Last sync: {new Date(feed.last_sync).toLocaleString()}
+                      <RefreshCw size={10} /> Last sync: {new Date(feed.lastUpdated).toLocaleString()}
                     </div>
                   </div>
                 ))}
@@ -118,7 +115,7 @@ const ThreatIntelPage: React.FC = () => {
 
                 <div className="text-xs font-semibold text-white mb-2">Recent Community Signatures</div>
                 <div className="space-y-2">
-                  {federation.iocs.map((ioc: any, i: number) => (
+                  {federation.iocs.map((ioc: any, i: number) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
                     <div key={i} className="p-3 rounded-lg bg-background-primary border border-background-border animate-fade-up" style={{ animationDelay: `${i * 100}ms` }}>
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-[10px] text-challenge-c1 font-mono">{ioc.ioc_type}</span>

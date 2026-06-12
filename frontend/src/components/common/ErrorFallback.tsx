@@ -1,11 +1,6 @@
 import React from 'react';
 
-interface Props {
-  error: Error | null;
-  resetErrorBoundary: () => void;
-}
-
-export const ErrorFallback: React.FC<Props> = ({ error, resetErrorBoundary }) => {
+export const ErrorFallback: React.FC<{ resetErrorBoundary: () => void }> = ({ resetErrorBoundary }) => {
   return (
     <div role="alert" className="p-4 bg-panel rounded">
       <h3 className="text-text.primary">Something went wrong</h3>

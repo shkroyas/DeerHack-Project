@@ -74,9 +74,7 @@ def _make_fake_cicids(n_benign: int = 200, n_attack: int = 50) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # TestConfig
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestConfig(unittest.TestCase):
 
@@ -105,9 +103,7 @@ class TestConfig(unittest.TestCase):
         self.assertGreaterEqual(len(FLOW_FEATURES), 5)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # TestThreatIntelEngine
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestThreatIntelEngine(unittest.TestCase):
 
@@ -227,9 +223,7 @@ class TestThreatIntelEngine(unittest.TestCase):
             self.assertFalse(engine._thread.is_alive())
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # TestRegimeLabelling
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestRegimeLabelling(unittest.TestCase):
 
@@ -279,9 +273,7 @@ class TestRegimeLabelling(unittest.TestCase):
         self.assertEqual(found, set(REGIME_CONTEXTS.keys()))
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # TestDataPreparation
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestDataPreparation(unittest.TestCase):
 
@@ -355,9 +347,7 @@ class TestDataPreparation(unittest.TestCase):
             load_regime_data(empty)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # TestStreamSimulator
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestStreamSimulator(unittest.TestCase):
 
@@ -406,9 +396,7 @@ class TestStreamSimulator(unittest.TestCase):
         self.assertIn("5.6.7.8", repr(rec))
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # TestAptScenario
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestAptScenario(unittest.TestCase):
 
@@ -450,9 +438,7 @@ class TestAptScenario(unittest.TestCase):
         self.assertEqual(self.apt[0].dst_ip, "185.220.101.32")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # TestIntegration
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestIntegration(unittest.TestCase):
 

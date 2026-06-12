@@ -25,7 +25,7 @@ export const AlertCard: React.FC<Props> = ({ alert, onAlertClick }) => {
       </div>
       <div className="mt-2 flex items-center gap-3 text-xs text-text.secondary">
         <TimestampDisplay value={alert.timestamp} />
-        {alert.mitre && <MITRETag technique={alert.mitre} />}
+        <MITRETag technique={alert.mitre} severity={alert.severity} />
         <span className="font-mono">{alert.sourceIp}</span>
       </div>
       <div className="mt-2">

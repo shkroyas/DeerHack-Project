@@ -102,9 +102,7 @@ def _load_real_agent(intel=None) -> PacketAgent:
     return PacketAgent.load(models_dir=MODELS_DIR, intel=intel)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 1: PacketAlert data structure
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestPacketAlert(unittest.TestCase):
 
@@ -157,9 +155,7 @@ class TestPacketAlert(unittest.TestCase):
         self.assertLessEqual(a.confidence,    1.0)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 2: JA3/JA3S computation
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestJA3Computation(unittest.TestCase):
 
@@ -216,9 +212,7 @@ class TestJA3Computation(unittest.TestCase):
         self.assertGreater(len(_GREASE_VALUES), 0)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 3: compute_beacon_features
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestBeaconFeatures(unittest.TestCase):
 
@@ -281,9 +275,7 @@ class TestBeaconFeatures(unittest.TestCase):
         self.assertAlmostEqual(float(arr[14]), 1.0, places=3)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 4: PacketAgent.load()
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestPacketAgentLoad(unittest.TestCase):
 
@@ -317,9 +309,7 @@ class TestPacketAgentLoad(unittest.TestCase):
         self.assertGreater(len(agent._rf_feats), 0)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 5: Layer 1 — JA3 lookup
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestLayer1JA3(unittest.TestCase):
 
@@ -362,9 +352,7 @@ class TestLayer1JA3(unittest.TestCase):
         self.assertIn("L1", alert.active_layers)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 6: Layer 2 — JA3S cross-signal
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestLayer2JA3S(unittest.TestCase):
 
@@ -416,9 +404,7 @@ class TestLayer2JA3S(unittest.TestCase):
             self.assertIn("server", alert.explanation.lower())
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 7: Layer 3 — CTU-13 RF beacon detector
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestLayer3Beacon(unittest.TestCase):
 
@@ -501,9 +487,7 @@ class TestLayer3Beacon(unittest.TestCase):
         self.assertIsInstance(alert, PacketAlert)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 8: Combined layer logic
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestCombinedLayers(unittest.TestCase):
 
@@ -567,9 +551,7 @@ class TestCombinedLayers(unittest.TestCase):
         self.assertLess(age, 10.0, "Alert timestamp is too old")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # GROUP 9: APT Section III demo record
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestAptScenario(unittest.TestCase):
 

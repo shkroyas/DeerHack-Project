@@ -1,7 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '@stores/auth.store';
-import { ROLE } from '@lib/constants';
 import type { Role } from '@types/auth.types';
 
 interface Props {

@@ -85,9 +85,7 @@ from pipeline.ingestion import FlowRecord
 logger = logging.getLogger(__name__)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # DATA STRUCTURES
-# ═══════════════════════════════════════════════════════════════════════════════
 
 @dataclass
 class PacketAlert:
@@ -143,9 +141,7 @@ class PacketAlert:
         )
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # JA3 COMPUTATION
-# ═══════════════════════════════════════════════════════════════════════════════
 
 # GREASE extension/cipher values — excluded from JA3 per RFC
 # (https://tools.ietf.org/html/rfc8701)
@@ -223,10 +219,8 @@ def compute_ja3s(
     return hashlib.md5(components.encode()).hexdigest()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # BEACON FEATURE ENGINEERING
 # matches exactly what was computed during CTU-13 training in Colab
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def compute_beacon_features(record: FlowRecord) -> np.ndarray:
     """
@@ -300,9 +294,7 @@ def compute_beacon_features(record: FlowRecord) -> np.ndarray:
     ], dtype=np.float32)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # PACKET AGENT
-# ═══════════════════════════════════════════════════════════════════════════════
 
 # Confidence threshold above which is_threat=True
 # TUNED on CICIDS2017 benign vs CTU-13 attack: 0.50 balances FPR and detection

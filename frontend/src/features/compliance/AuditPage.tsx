@@ -73,7 +73,20 @@ const AuditPage: React.FC = () => {
             <p className="text-xs text-text-muted mb-4 leading-relaxed">
               Export chain of custody report for NRB auditor compliance checks. The report includes cryptographic proofs for all containment actions.
             </p>
-            <button className="w-full btn-primary text-xs flex justify-center gap-2">
+            <button 
+              className="w-full btn-primary text-xs flex justify-center gap-2"
+              onClick={async () => {
+                const toast = (await import('react-hot-toast')).toast;
+                const toastId = toast.loading('Generating NRB Compliance Report...');
+                try {
+                  await auditService.downloadNrbReport();
+                  toast.success('NRB Report generated successfully and downloaded to your device.', { id: toastId });
+                } catch (e) {
+                  toast.error('Failed to generate NRB Report.', { id: toastId });
+                  console.error(e);
+                }
+              }}
+            >
               <FileText size={14} /> Generate NRB Report
             </button>
           </div>

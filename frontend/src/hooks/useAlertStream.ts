@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { connectSocket, getSocket } from '@lib/socket';
+import { connectSocket } from '@lib/socket';
 import { logger } from '@lib/logger';
 
 /**

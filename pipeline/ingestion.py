@@ -47,9 +47,7 @@ from config import (
 logger = logging.getLogger(__name__)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # REGIME LABELLING — Core of Challenge C2
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def _nepal_hour(utc_hour: int, utc_minute: int = 0) -> float:
     """
@@ -128,9 +126,7 @@ def assign_regime(
     return "normal"
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # CICIDS-2017 DATA PREPARATION
-# ═══════════════════════════════════════════════════════════════════════════════
 
 _LABEL_COL = "Label"
 
@@ -284,9 +280,7 @@ def load_regime_data(
         return pickle.load(f)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # FLOW RECORD — shared data structure for the full pipeline
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class FlowRecord:
     """
@@ -364,9 +358,7 @@ class FlowRecord:
         )
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # STREAM SIMULATOR — asyncio replacement for Apache Kafka
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class StreamSimulator:
     """
@@ -427,9 +419,7 @@ class StreamSimulator:
         self._running = False
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # APT SCENARIO BUILDER — Section III of paper, reproduced as FlowRecords
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def build_apt_scenario() -> List[FlowRecord]:
     """

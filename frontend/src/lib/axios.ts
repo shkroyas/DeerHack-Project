@@ -18,9 +18,6 @@ axiosRetry(apiClient, {
   }
 });
 
-let isRefreshing = false;
-let refreshCall: Promise<void> | null = null;
-
 apiClient.interceptors.request.use((req) => {
   const { accessToken, user } = useAuthStore.getState();
   req.headers = req.headers ?? {};

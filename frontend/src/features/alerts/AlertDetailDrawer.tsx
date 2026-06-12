@@ -26,7 +26,7 @@ export const AlertDetailDrawer: React.FC<Props> = ({ alert, onClose }) => {
         <SeverityIndicator severity={alert.severity} />
         <div className="text-xs text-text.secondary">{new Date(alert.timestamp).toLocaleString()}</div>
         <div className="text-xs text-text.secondary font-mono">{alert.sourceIp} → {alert.destinationIp ?? '-'}</div>
-        {alert.mitre && <MITRETag technique={alert.mitre} />}
+        <MITRETag technique={alert.mitre} severity={alert.severity} />
         <CRSGauge value={alert.crs} />
       </div>
     </div>

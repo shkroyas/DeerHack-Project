@@ -42,9 +42,7 @@ from agents.behaviour_agent import BehaviorAgent, BehaviorAlert
 from pipeline.ingestion import FlowRecord
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # HELPERS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 _KNOWN_EVENT_IDS = {
     4624: 0,   # successful logon
@@ -83,9 +81,7 @@ def _seq_to_record(seq, account="user", src_ip="10.22.18.50"):
     return rec
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # SCENARIO BUILDERS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def normal_office_hours_sequence():
     """
@@ -239,9 +235,7 @@ def insider_slow_exfiltration_sequence():
     return seq
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # RUNNER
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def run_inference_example():
     print("\n" + "=" * 80)

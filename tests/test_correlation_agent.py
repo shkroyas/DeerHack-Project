@@ -32,9 +32,7 @@ from config import (
 from pipeline.ingestion import FlowRecord
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # FIXTURES
-# ═══════════════════════════════════════════════════════════════════════════════
 
 @pytest.fixture
 def correlation_agent():
@@ -85,9 +83,7 @@ def make_record():
     return _make
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # 1. BBN INFERENCE TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestBBNInference:
     """Test the Bayesian Belief Network inference engine."""
@@ -191,9 +187,7 @@ class TestBBNInference:
         )
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # 2. CRS CALCULATION TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestCRSCalculation:
     """Test Composite Risk Score computation."""
@@ -270,9 +264,7 @@ class TestCRSCalculation:
         assert result.crs <= 1.0
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # 3. DEDUPLICATION TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestDeduplication:
     """Test the sliding-window deduplication mechanism."""
@@ -325,9 +317,7 @@ class TestDeduplication:
         assert result.suppression_reason != "deduplication"
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # 4. CAUSAL CHAINING TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestCausalChaining:
     """Test the causal chaining mechanism."""
@@ -372,9 +362,7 @@ class TestCausalChaining:
         assert stats["chain_merged"] >= 2
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # 5. CONFIDENCE GATING TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestConfidenceGating:
     """Test the confidence gating suppression layer."""
@@ -409,9 +397,7 @@ class TestConfidenceGating:
             assert result.suppression_reason != "confidence_gating"
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # 6. CONTEXT-AWARE FILTERING TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestContextFiltering:
     """Test the context-aware noise suppression."""
@@ -470,9 +456,7 @@ class TestContextFiltering:
         assert result.suppression_reason != "context_filtering"
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # 7. PRIORITY CLASSIFICATION TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestPriorityClassification:
     """Test the priority level classification."""
@@ -510,9 +494,7 @@ class TestPriorityClassification:
         assert classify(0.50, 3) == "HIGH"
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # 8. END-TO-END CORRELATION TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestEndToEndCorrelation:
     """Test complete correlation pipeline on FlowRecords."""
@@ -577,9 +559,7 @@ class TestEndToEndCorrelation:
         assert 0.0 <= result.bbn_posterior <= 1.0
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # 9. EDGE CASES AND BATCH PROCESSING
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestEdgeCases:
     """Test edge cases and batch processing."""
@@ -656,9 +636,7 @@ class TestEdgeCases:
             CorrelationAgent(crs_weights=[0.5, 0.5])
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # 10. SUPPRESSION STATISTICS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestSuppressionStats:
     """Test the suppression statistics tracking."""
@@ -697,9 +675,7 @@ class TestSuppressionStats:
         assert stats["total_suppressed"] + stats["alerts_emitted"] == stats["total_processed"]
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # 11. IP CIDR MATCHING
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class TestIPCIDR:
     """Test IP-in-CIDR matching utility."""

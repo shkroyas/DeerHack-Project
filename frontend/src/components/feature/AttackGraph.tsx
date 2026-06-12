@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import cytoscape from 'cytoscape';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardService } from '@services/dashboard.service';

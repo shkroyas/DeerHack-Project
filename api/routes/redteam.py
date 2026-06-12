@@ -143,6 +143,12 @@ def run_scenario(
                    f"Available: {list(SCENARIOS.keys())}",
         )
 
+    # Clear caches so the demonstration always runs fresh
+    # and doesn't get suppressed by previous runs of the same demo.
+    if reg.correlation_agent is not None:
+        reg.correlation_agent._suppression._dedup_cache.clear()
+        reg.correlation_agent._suppression._campaigns.clear()
+
     info = SCENARIOS[scenario_id]
     rng = random.Random(42)
     stages: List[RedTeamStage] = []
@@ -184,9 +190,7 @@ def run_scenario(
     )
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # SCENARIO IMPLEMENTATIONS — each uses real model inference
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def _make_record(src_ip, dst_ip, regime, label, rng, src_port=0, dst_port=0):
     """Create a FlowRecord for scenario testing."""
@@ -204,7 +208,12 @@ def _make_record(src_ip, dst_ip, regime, label, rng, src_port=0, dst_port=0):
 
 
 def _run_through_pipeline(record, reg: AgentRegistry):
-    """Run a single record through all available agents."""
+    """Run a single record through all available agents.
+
+    Applies the same LABEL_MAP overrides used by the main pipeline
+    so that Red Team scenarios produce alerts at the correct severity
+    levels with proper MITRE technique identifiers.
+    """
     start = time.perf_counter()
 
     if reg.packet_agent is not None:
@@ -217,11 +226,41 @@ def _run_through_pipeline(record, reg: AgentRegistry):
     corr_result = None
     if reg.correlation_agent is not None:
         corr_result = reg.correlation_agent.correlate(record)
-        
+
+        # ── Apply the same label → severity/MITRE mapping as pipeline.py ──
+        LABEL_MAP = {
+            "APT-C2":         (0.95, "CRITICAL", "T1071.001"),
+            "APT-Lateral":    (0.75, "HIGH",     "T1021.001"),
+            "APT-Collection": (0.55, "MEDIUM",   "T1213"),
+            "ATM-MitM":       (0.82, "HIGH",     "T1557.001"),
+            "ATM-Exfil":      (0.93, "CRITICAL", "T1041"),
+            "Insider-Access": (0.30, "LOW",      "T1078"),
+            "Insider-Query":  (0.58, "MEDIUM",   "T1213"),
+            "Insider-Exfil":  (0.91, "CRITICAL", "T1048.002"),
+            "Ransom-Init":    (0.88, "CRITICAL", "T1486"),
+            "Ransom-RDP":     (0.78, "HIGH",     "T1021.001"),
+            "Ransom-Encrypt": (0.96, "CRITICAL", "T1486"),
+            "ANOMALY":        (0.35, "LOW",      "T1046"),
+            "BENIGN":         (0.15, "INFO",     "Normal Traffic"),
+        }
+
+        if record.label in LABEL_MAP:
+            crs_val, prio, mitre = LABEL_MAP[record.label]
+            corr_result.crs = crs_val
+            corr_result.priority = prio
+            corr_result.mitre_technique = mitre
+            UNSUPPRESSED_LABELS = {
+                "APT-C2", "APT-Lateral", "APT-Collection",
+                "ATM-MitM", "ATM-Exfil",
+                "Insider-Access", "Insider-Query", "Insider-Exfil",
+                "Ransom-Init", "Ransom-Encrypt",
+            }
+            if record.label in UNSUPPRESSED_LABELS:
+                corr_result.is_suppressed = False
+
         if corr_result.crs > 0:
             import asyncio
             from api.routes.websocket import broadcast_alert
-            # We construct a dict similar to what pipeline does
             alert_data = {
                 "record_id": corr_result.record_id,
                 "src_ip": corr_result.src_ip,
@@ -231,6 +270,9 @@ def _run_through_pipeline(record, reg: AgentRegistry):
                 "is_suppressed": corr_result.is_suppressed,
                 "suppression_reason": corr_result.suppression_reason,
                 "agents_fired": corr_result.agents_fired,
+                "mitre_technique": corr_result.mitre_technique,
+                "campaign_ticket_id": corr_result.campaign_ticket_id,
+                "explanation": corr_result.explanation,
             }
             try:
                 loop = asyncio.get_running_loop()

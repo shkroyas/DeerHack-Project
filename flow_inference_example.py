@@ -41,9 +41,7 @@ from config import FLOW_FEATURES, REGIME_CONTEXTS
 from pipeline.ingestion import FlowRecord
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # HELPERS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def _record(src, dst, feats, regime, label="BENIGN") -> FlowRecord:
     """Build a FlowRecord with explicit regime so the agent uses the right model."""
@@ -52,9 +50,7 @@ def _record(src, dst, feats, regime, label="BENIGN") -> FlowRecord:
     return rec
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # BENIGN FLOWS — values near CICIDS benign median
-# ═══════════════════════════════════════════════════════════════════════════════
 # CICIDS Wednesday benign approximate medians (per-flow):
 #   Duration ~3–8 s, Fwd Pkts ~10–80, Bwd Pkts ~8–60, Fwd Bytes ~3–25 KB
 #   Flow Bytes/s ~1–5 KB/s, Packets/s ~5–30, IAT Mean ~0.05–0.5 s
@@ -216,9 +212,7 @@ def create_benign_flows():
     return flows
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # ATTACK FLOWS — extreme values, should fire on every regime model
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def create_attack_flows():
     attacks = []
@@ -351,9 +345,7 @@ def create_attack_flows():
     return attacks
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # RUNNER
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def run_inference_example():
     print("\n" + "=" * 80)

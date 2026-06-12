@@ -71,9 +71,7 @@ from pipeline.ingestion import FlowRecord
 logger = logging.getLogger(__name__)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # BAYESIAN BELIEF NETWORK — CPD parameters (from implementation plan)
-# ═══════════════════════════════════════════════════════════════════════════════
 
 # Conditional probability tables: P(Agent=1 | Campaign)
 # Format: { agent_name: (FPR, TPR) }
@@ -86,9 +84,7 @@ _CPD_PARAMS = {
 }
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # DATA STRUCTURES
-# ═══════════════════════════════════════════════════════════════════════════════
 
 @dataclass
 class CorrelationResult:
@@ -127,6 +123,7 @@ class CorrelationResult:
     agents_fired:       List[str]
     campaign_ticket_id: Optional[str]       = None
     dedup_count:        int                 = 1
+    mitre_technique:    Optional[str]       = None
     explanation:        str                 = ""
     timestamp:          datetime            = field(
         default_factory=lambda: datetime.now(timezone.utc)
@@ -143,9 +140,7 @@ class CorrelationResult:
         )
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # BBN INFERENCE ENGINE (pgmpy-backed with manual fallback)
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class _BBNInference:
     """
@@ -312,9 +307,7 @@ class _BBNInference:
         return likelihood_1 / total
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # SUPPRESSION ENGINE — four layers
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class _DedupEntry:
     """Tracks a deduplication bucket for identical alert signatures."""
@@ -554,9 +547,7 @@ class _SuppressionEngine:
         return False
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # CORRELATION AGENT
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class CorrelationAgent:
     """
@@ -649,12 +640,20 @@ class CorrelationAgent:
 
         # ── Step 2: Build agent list ────────────────────────────────────────
         agents_fired = []
+        mitre_technique = None
+        
         if pkt_fired:
             agents_fired.append("packet")
+            if getattr(pkt_alert, "mitre_technique", None):
+                mitre_technique = pkt_alert.mitre_technique
         if flow_fired:
             agents_fired.append("flow")
+            if not mitre_technique and getattr(flow_alert, "mitre_technique", None):
+                mitre_technique = flow_alert.mitre_technique
         if beh_fired:
             agents_fired.append("behavior")
+            if not mitre_technique and getattr(beh_alert, "mitre_technique", None):
+                mitre_technique = beh_alert.mitre_technique
 
         # ── Step 3: BBN posterior ───────────────────────────────────────────
         bbn_posterior = self._bbn.query(pkt_fired, flow_fired, beh_fired)
@@ -700,6 +699,7 @@ class CorrelationAgent:
             agents_fired       = agents_fired,
             campaign_ticket_id = ticket_id,
             dedup_count        = dedup_count,
+            mitre_technique    = mitre_technique,
             explanation        = explanation,
         )
 
@@ -801,9 +801,7 @@ class CorrelationAgent:
         return "  |  ".join(parts)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # SMOKE TEST — python -m agents.correlation_agent
-# ═══════════════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
     import sys

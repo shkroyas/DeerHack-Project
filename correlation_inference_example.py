@@ -38,9 +38,7 @@ from pipeline.ingestion import FlowRecord, build_apt_scenario
 from agents.correlation_agent import CorrelationAgent
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # HELPERS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def _separator(title):
     print(f"\n{'=' * 80}")
@@ -79,9 +77,7 @@ def _print_result(result, label="", indent=4):
         print(f"{pad}    Dedup Count    : {result.dedup_count}")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # SECTION 1: BBN INFERENCE TABLE
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def run_bbn_inference_table(agent):
     """Show the BBN posterior for all 8 evidence combinations."""
@@ -129,9 +125,7 @@ def run_bbn_inference_table(agent):
     print(f"  higher than when none fire - multi-agent correlation is powerful.")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # SECTION 2: FULL PIPELINE APT SCENARIO
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def run_apt_pipeline(corr_agent):
     """
@@ -239,9 +233,7 @@ def run_apt_pipeline(corr_agent):
     return apt_records
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # SECTION 3: BENIGN TRAFFIC (should be suppressed or LOW/INFO)
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def run_benign_scenarios(corr_agent):
     """
@@ -309,9 +301,7 @@ def run_benign_scenarios(corr_agent):
     return pass_count, len(benign_scenarios)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # SECTION 4: SUPPRESSION LAYER DEMO
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def run_suppression_demo(corr_agent):
     """
@@ -404,9 +394,7 @@ def run_suppression_demo(corr_agent):
           f"reason={result_atm2.suppression_reason}")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # SECTION 5: CRS WEIGHT VERIFICATION
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def run_crs_verification(corr_agent):
     """Numerically verify CRS calculation matches the formula."""
@@ -462,9 +450,7 @@ def run_crs_verification(corr_agent):
     return all_match
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # MAIN
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def main():
     print("\n" + "=" * 80)

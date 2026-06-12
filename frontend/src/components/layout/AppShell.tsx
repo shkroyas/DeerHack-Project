@@ -1,11 +1,35 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Outlet } from 'react-router-dom';
-import { useUIStore } from '@stores/ui.store';
+// Removed useUIStore
+import { useAlertStore } from '@stores/alertStore';
+import { useAlertStream } from '@hooks/useAlertStream';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 
 export const AppShell: React.FC = () => {
-  const collapsed = useUIStore((s) => s.sidebarCollapsed);
+  // collapsed was here
+  const addAlert = useAlertStore((s) => s.addAlert);
+
+  // Stable callback to avoid infinite reconnection loops
+  const handleAlert = useCallback((payload: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    if (payload && payload.record_id) {
+      addAlert({
+        id: `ALERT-${payload.record_id}`,
+        timestamp: payload.timestamp || new Date().toISOString(),
+        sourceIp: payload.src_ip || "Unknown",
+        destinationIp: payload.dst_ip || "Unknown",
+        severity: payload.priority || "LOW",
+        mitre: payload.campaign_ticket_id || "Unknown",
+        agents: payload.agents_fired || [],
+        crs: payload.crs || 0.0,
+        challenge: 'C3'
+      });
+    }
+  }, [addAlert]);
+
+  // Subscribe to live feed globally
+  useAlertStream(handleAlert);
+
   return (
     <div className="flex h-screen">
       <Sidebar />
@@ -18,3 +42,4 @@ export const AppShell: React.FC = () => {
     </div>
   );
 };
+

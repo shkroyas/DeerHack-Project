@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { agentsService } from '@services/agents.service';
 import { queryKeys } from '@lib/queryKeys';
-import { Activity, Cpu } from 'lucide-react';
+import { Cpu } from 'lucide-react';
 
 const challengeMap: Record<string, string> = {
   packet: 'C4',
@@ -39,7 +39,7 @@ export const AgentHealthPanel: React.FC = () => {
           { id: 'behavior', name: 'Behavior Agent', status: 'LOADING', eps: 0 },
           { id: 'correlation', name: 'Correlation Agent', status: 'LOADING', eps: 0 },
           { id: 'response', name: 'Response Agent', status: 'LOADING', eps: 0 },
-        ]).map((agent: any, i: number) => {
+        ]).map((agent: any, i: number) => { // eslint-disable-line @typescript-eslint/no-explicit-any
           const challenge = challengeMap[agent.id] || '—';
           const isOnline = agent.status === 'ONLINE';
           return (

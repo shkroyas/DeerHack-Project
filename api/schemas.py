@@ -16,9 +16,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from pydantic import BaseModel, Field
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # REQUEST MODELS
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class FlowRecordRequest(BaseModel):
     """
@@ -93,9 +91,7 @@ class CorrelationResultInput(BaseModel):
     timestamp: Optional[datetime] = None
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # RESPONSE MODELS — Agent Alerts
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class PacketAlertResponse(BaseModel):
     """Mirrors ``agents.packet_agent.PacketAlert``."""
@@ -163,13 +159,12 @@ class CorrelationResultResponse(BaseModel):
     agents_fired: List[str]
     campaign_ticket_id: Optional[str] = None
     dedup_count: int = 1
+    mitre_technique: Optional[str] = None
     explanation: str = ""
     timestamp: datetime
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # RESPONSE MODELS — Composite / Utility
-# ═══════════════════════════════════════════════════════════════════════════════
 
 class PipelineResponse(BaseModel):
     """
