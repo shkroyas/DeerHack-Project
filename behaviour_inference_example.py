@@ -26,11 +26,17 @@ Run:
     python behaviour_inference_example.py
 """
 
+import sys
+import io
 import math
 import time
 from datetime import datetime, timezone
 
 import numpy as np
+
+# Fix Windows console encoding (cp1252 cannot handle Unicode symbols)
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 from agents.behaviour_agent import BehaviorAgent, BehaviorAlert
 from pipeline.ingestion import FlowRecord

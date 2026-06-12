@@ -173,19 +173,22 @@ class BehaviorAlert:
 # BILSTM AUTOENCODER
 # ═══════════════════════════════════════════════════════════════════════════════
 
+class DecoderSequential(nn.Sequential):
+    @property
+    def out_features(self):
+        for layer in reversed(self):
+            if hasattr(layer, 'out_features'):
+                return layer.out_features
+        raise AttributeError("No layer with out_features in Sequential")
+
+
 class BehaviorLSTM(nn.Module):
     """
     Bidirectional LSTM autoencoder for zero-day behavioral detection.
 
     Architecture (Section V-C of paper):
-      Encoder: BiLSTM(input=8, hidden=64, layers=2, dropout=0.2)
-      Decoder: Linear(hidden*2 → input)
-
-    Training: MSELoss on NORMAL sequences only.
-    The model NEVER sees attack sequences during training.
-
-    Detection: reconstruction_error = mean MSE across all timesteps.
-    Threshold = 95th percentile of normal training errors.
+      Encoder: BiLSTM(input=8, hidden=128, layers=2, dropout=0.3)
+      Decoder: Sequential linear layers with LayerNorm
     """
 
     def __init__(
@@ -208,7 +211,13 @@ class BehaviorLSTM(nn.Module):
             bidirectional = True,
             dropout       = dropout if num_layers > 1 else 0.0,
         )
-        self.decoder = nn.Linear(hidden_size * 2, input_size)
+        self.layer_norm = nn.LayerNorm(hidden_size * 2)
+        self.decoder = DecoderSequential(
+            nn.Linear(hidden_size * 2, hidden_size),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_size, input_size),
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -221,6 +230,7 @@ class BehaviorLSTM(nn.Module):
             Reconstructed tensor of same shape as x.
         """
         lstm_out, _ = self.encoder(x)          # (batch, seq_len, hidden*2)
+        lstm_out = self.layer_norm(lstm_out)
         return self.decoder(lstm_out)           # (batch, seq_len, input_size)
 
     def reconstruction_error(self, x: torch.Tensor) -> torch.Tensor:
@@ -505,10 +515,14 @@ class BehaviorAgent:
           account          → account name for the alert
         """
         seq     = self._record_to_sequence(record)
-        account = str(record.features.get("account", "unknown_account"))
+        account = str(getattr(record, "account", None) or record.features.get("account", "unknown_account"))
         alert   = self.score_sequence(seq, src_ip=record.src_ip, account=account)
         record.behavior_alert = alert
         return alert
+
+    def score_batch(self, records: List[FlowRecord]) -> List[BehaviorAlert]:
+        """Score a list of FlowRecord objects and return a list of BehaviorAlerts."""
+        return [self.score(rec) for rec in records]
 
     def score_sequence(
         self,
@@ -572,6 +586,9 @@ class BehaviorAgent:
 
     def _record_to_sequence(self, record: FlowRecord) -> np.ndarray:
         """Build a (seq_len, input_size) sequence from FlowRecord features."""
+        if getattr(record, "behavior_sequence", None) is not None:
+            return record.behavior_sequence
+
         gen = BehaviorDataGenerator(
             seed=int(abs(hash(record.src_ip)) % 1000)
         )

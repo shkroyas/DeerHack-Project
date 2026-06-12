@@ -311,6 +311,8 @@ class FlowRecord:
         # Agent results (populated by each agent in turn)
         "packet_alert", "flow_alert", "behavior_alert",
         "correlation_result", "response_actions",
+        # Custom testing/example fields
+        "behavior_sequence", "account",
     )
 
     def __init__(
@@ -350,6 +352,10 @@ class FlowRecord:
         self.behavior_alert     = None
         self.correlation_result = None
         self.response_actions:  list = []
+
+        # Custom fields
+        self.behavior_sequence = None
+        self.account           = None
 
     def __repr__(self) -> str:
         return (

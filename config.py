@@ -120,9 +120,9 @@ CRS_WEIGHTS = [0.28, 0.24, 0.26, 0.22]
 # ═══════════════════════════════════════════════════════════════════════════════
 BEHAVIOR_SEQUENCE_LENGTH    = 20
 BEHAVIOR_INPUT_SIZE         = 8
-BEHAVIOR_HIDDEN_SIZE        = 64
+BEHAVIOR_HIDDEN_SIZE        = 128
 BEHAVIOR_NUM_LAYERS         = 2
-BEHAVIOR_DROPOUT            = 0.2
+BEHAVIOR_DROPOUT            = 0.3
 BEHAVIOR_ANOMALY_PERCENTILE = 95
 
 # ── Flow Agent ────────────────────────────────────────────────────────────────

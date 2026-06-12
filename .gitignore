@@ -1,2 +1,28 @@
-models/
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Data and Models
+# We ignore these directories because they contain large datasets (like CICIDS-2018 or CTU-13) 
+# and trained model files (.pkl, .pt) which are too large for standard git repositories 
+# and should be generated locally or hosted on cloud storage/LFS.
 data/
+models/
+
+# Logs
+logs/
+*.log
+
+# Pytest
+.pytest_cache/
+
+# IDEs
+.vscode/
+.idea/
