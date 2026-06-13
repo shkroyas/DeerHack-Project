@@ -1,5 +1,5 @@
 """
-Flow Agent Inference Example — Fixed
+Flow Agent Inference Example
 ======================================
 BankSentinel Challenge C2: Calendar-Aware False Positive Suppression
 

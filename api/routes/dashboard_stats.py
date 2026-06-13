@@ -125,8 +125,9 @@ def dashboard_kpis(reg: AgentRegistry = Depends(get_registry)):
         # FPR = (benign/anomaly alerts that leaked through) / (total processed benign traffic)
         from api.routes.pipeline import _fpr_counters
         false_positives = _fpr_counters["false_positives"]
-        if threats_today > 0:
-            fpr = round((false_positives / threats_today) * 100, 1)
+        total_benign = _fpr_counters.get("total_benign_processed", 0)
+        if total_benign > 0:
+            fpr = round((false_positives / total_benign) * 100, 1)
 
     # Threat feed age
     feed_age = None

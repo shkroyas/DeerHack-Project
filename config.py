@@ -74,10 +74,10 @@ NEPAL_UTC_OFFSET_MINUTES = 345
 
 # CHALLENGE C4 — Encrypted Traffic Detection
 # Three independent layers — all operate without payload decryption.
-JA3_FEED_URL    = "https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv"
-C2_IP_FEED_URL  = "https://feodotracker.abuse.ch/downloads/ipblocklist.json"
-URLHAUS_API_URL = "https://urlhaus-api.abuse.ch/v1/urls/recent/"
-TOR_EXIT_URL    = "https://check.torproject.org/torbulkexitlist"
+JA3_FEED_URL    = "https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv" # fetches known malware TLS fingerprints.
+C2_IP_FEED_URL  = "https://feodotracker.abuse.ch/downloads/ipblocklist.json" # fetches active Command & Control server IP addresses
+URLHAUS_API_URL = "https://urlhaus-api.abuse.ch/v1/urls/recent/" # returns URLs recently reported as C2 or malware distribution points
+TOR_EXIT_URL    = "https://check.torproject.org/torbulkexitlist" # fetches current Tor exit nodes
 
 # Layer 2: JA3S bidirectional cross-signal confidence
 JA3S_CROSS_CONFIDENCE = 0.65
