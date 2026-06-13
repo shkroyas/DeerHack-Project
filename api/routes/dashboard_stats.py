@@ -112,7 +112,7 @@ def dashboard_kpis(reg: AgentRegistry = Depends(get_registry)):
     suppressed = 0
     emitted = 0
     suppression_rate = 0.0
-    fpr = 2.4 
+    fpr = 2.4
 
     if reg.correlation_agent is not None:
         stats = reg.correlation_agent.get_stats()
@@ -128,6 +128,15 @@ def dashboard_kpis(reg: AgentRegistry = Depends(get_registry)):
         total_benign = _fpr_counters.get("total_benign_processed", 0)
         if total_benign > 0:
             fpr = round((false_positives / total_benign) * 100, 1)
+
+    # Mean response time from actual pipeline latencies
+    from api.routes.pipeline import _response_times
+    if _response_times:
+        # Convert seconds to minutes for display
+        mean_resp_sec = sum(_response_times) / len(_response_times)
+        mean_resp_min = round(mean_resp_sec / 60.0, 2)
+    else:
+        mean_resp_min = 0.0
 
     # Threat feed age
     feed_age = None
@@ -150,7 +159,7 @@ def dashboard_kpis(reg: AgentRegistry = Depends(get_registry)):
         threats_today=threats_today,
         false_positive_rate=round(fpr, 1),
         intel_feed_age_min=round(feed_age, 1) if feed_age is not None else None,
-        mean_response_time_min=3.8,  # From paper target
+        mean_response_time_min=mean_resp_min,
         alerts_suppressed=suppressed,
         alerts_emitted=emitted,
         suppression_rate=round(suppression_rate, 1),

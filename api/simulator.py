@@ -27,17 +27,31 @@ def _make_random_benign_record() -> FlowRecord:
         dst_port=random.choice([80, 443, 53, 3389, 1521]),
     )
 
-def _make_random_anomaly_record() -> FlowRecord:
-    """Generate a random low-severity anomaly."""
-    return FlowRecord(
+def _make_random_anomaly_record(reg) -> FlowRecord:
+    """Generate a random low-severity anomaly or live threat feed match."""
+    dst_ip = "203.0.113.5"
+    
+    # Randomly select a real C2 IP from the live threat feed if available
+    if reg and reg.threat_engine is not None and reg.threat_engine._c2_ips:
+        dst_ip = random.choice(list(reg.threat_engine._c2_ips))
+        
+    rec = FlowRecord(
         src_ip="10.22.14.45",
-        dst_ip="203.0.113.5",
+        dst_ip=dst_ip,
         features={f: random.uniform(1000, 5000) for f in FLOW_FEATURES},
         label="ANOMALY",
         regime="normal",
         src_port=random.randint(1024, 65535),
         dst_port=4444,
     )
+    
+    # 50% chance to also inject a live malicious JA3 hash to trigger C4 Layer 1
+    if reg and reg.threat_engine is not None and reg.threat_engine._ja3_db and random.random() > 0.5:
+        rec.ja3_hash = random.choice(list(reg.threat_engine._ja3_db.keys()))
+        rec.label = "APT-C2"
+        rec.tls_version = 771
+        
+    return rec
 
 async def traffic_simulator():
     """
@@ -48,8 +62,10 @@ async def traffic_simulator():
     
     from api.dependencies import get_registry
     from api.routes.pipeline import _run_pipeline_on_record
-    
+    import asyncio
+
     reg = get_registry()
+    loop = asyncio.get_event_loop()
     logger.info("Traffic simulator started.")
     
     ticks = 0
@@ -58,7 +74,7 @@ async def traffic_simulator():
             # Generate 1 to 3 benign records
             for _ in range(random.randint(1, 3)):
                 rec = _make_random_benign_record()
-                _run_pipeline_on_record(rec, reg)
+                _run_pipeline_on_record(rec, reg, loop, source="simulator")
             
             # Every ~15 seconds inject ALL severities
             if ticks % 15 == 0 and ticks > 0:
@@ -70,15 +86,15 @@ async def traffic_simulator():
                 
                 # Collect all demo records (CRITICAL, HIGH, MEDIUM, LOW)
                 apt_records = build_apt_scenario()
-                rec_low = _make_random_anomaly_record()
+                rec_anomaly = _make_random_anomaly_record(reg)
                 
-                all_demo_records = apt_records + [rec_low]
+                all_demo_records = apt_records + [rec_anomaly]
                 
                 # Shuffle so they appear in random order instead of serially
                 random.shuffle(all_demo_records)
                 
                 for rec in all_demo_records:
-                    _run_pipeline_on_record(rec, reg)
+                    _run_pipeline_on_record(rec, reg, loop, source="simulator")
                     await asyncio.sleep(0.5)
             
             ticks += 1

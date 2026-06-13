@@ -57,10 +57,24 @@ export const AlertFeed: React.FC<{ initialAlerts?: unknown[] }> = ({ initialAler
   const queryClient = useQueryClient();
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Switch backend mode when toggle changes
   useEffect(() => {
-    let ws: WebSocket | null = null;
-    let pollInterval: NodeJS.Timeout | null = null;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL
+      ? import.meta.env.VITE_API_BASE_URL.replace(/^https?:\/\//, '')
+      : `${window.location.hostname}:8000`;
 
+    fetch(`http://${baseUrl}/pipeline/mode`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: feedMode === 'live' ? 'live' : 'simulated' }),
+    }).catch(console.error);
+
+    // Clear alerts when switching modes
+    setAlerts([]);
+  }, [feedMode]);
+
+  // WebSocket connection — always active, backend filters by mode
+  useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     let baseUrl = import.meta.env.VITE_API_BASE_URL
       ? import.meta.env.VITE_API_BASE_URL.replace(/^https?:\/\//, '')
@@ -70,65 +84,29 @@ export const AlertFeed: React.FC<{ initialAlerts?: unknown[] }> = ({ initialAler
         baseUrl = `${window.location.hostname}:8000`;
     }
 
-    if (feedMode === 'live') {
-      ws = new WebSocket(`${protocol}//${baseUrl}/ws/alerts`);
+    const ws = new WebSocket(`${protocol}//${baseUrl}/ws/alerts`);
 
-      ws.onopen = () => setIsConnected(true);
+    ws.onopen = () => setIsConnected(true);
 
-      ws.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          if (msg.type === 'alert' && msg.data) {
-            setAlerts((prev) => [msg.data as AlertData, ...prev].slice(0, 50));
-            queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-            if (scrollRef.current) {
-              scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-            }
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'alert' && msg.data) {
+          setAlerts((prev) => [msg.data as AlertData, ...prev].slice(0, 50));
+          queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+          if (scrollRef.current) {
+            scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
           }
-        } catch (e) {
-          console.error('Failed to parse WS message', e);
         }
-      };
-
-      ws.onclose = () => setIsConnected(false);
-    } else {
-      setIsConnected(true);
-      pollInterval = setInterval(async () => {
-        try {
-          const res = await fetch(`http://${baseUrl}/pipeline/apt-demo`, {
-            method: 'POST'
-          });
-          const data = await res.json();
-          if (Array.isArray(data)) {
-             // Extract alert items from PipelineResponse
-             const newAlerts = data.map(d => ({
-               record_id: d.record_id,
-               src_ip: d.src_ip,
-               dst_ip: d.dst_ip,
-               crs: d.crs_score,
-               priority: d.priority,
-               is_suppressed: d.is_suppressed,
-               suppression_reason: d.suppression_reason,
-               agents_fired: Object.keys(d.agent_results || {}).filter(k => d.agent_results[k].is_alert),
-               mitre_technique: ''
-             }));
-             setAlerts(prev => [...newAlerts, ...prev].slice(0, 50));
-             queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-             if (scrollRef.current) {
-               scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-             }
-          }
-        } catch (e) {
-          console.error('Failed to fetch simulated data', e);
-        }
-      }, 5000);
-    }
-
-    return () => { 
-      if (ws) ws.close(); 
-      if (pollInterval) clearInterval(pollInterval);
+      } catch (e) {
+        console.error('Failed to parse WS message', e);
+      }
     };
-  }, [queryClient, feedMode]);
+
+    ws.onclose = () => setIsConnected(false);
+
+    return () => { ws.close(); };
+  }, [queryClient]);
 
   return (
     <div className="flex flex-col h-full min-h-0">

@@ -37,7 +37,7 @@ export const TopBar: React.FC = () => {
       challengeClass: 'challenge-badge-c3',
       icon: <ShieldAlert size={14} />,
       value: data?.threatsToday ?? 0,
-      sub: '▼ 87% after suppression',
+      sub: `▼ ${data?.suppressionRate ?? 0}% suppressed`,
       glowClass: 'glow-c3',
     },
     {
@@ -45,7 +45,7 @@ export const TopBar: React.FC = () => {
       challenge: 'C2',
       challengeClass: 'challenge-badge-c2',
       icon: <TrendingDown size={14} />,
-      value: `${data?.falsePositiveRate ?? 7.1}%`,
+      value: `${data?.falsePositiveRate ?? 2.4}%`,
       sub: 'Context-aware model',
       glowClass: 'glow-c2',
     },
@@ -67,7 +67,7 @@ export const TopBar: React.FC = () => {
       icon: <Clock size={14} />,
       value: `${data?.meanResponseTimeMin ?? 3.8}`,
       suffix: 'min',
-      sub: 'Baseline: 14.2 min',
+      sub: `Emitted: ${data?.alertsEmitted ?? 0} alerts`,
       glowClass: 'glow-c3',
     },
   ];

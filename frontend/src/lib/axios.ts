@@ -9,7 +9,7 @@ const config = getConfig();
 
 export const apiClient = axios.create({
   baseURL: config.apiBaseUrl,
-  withCredentials: true
+  withCredentials: false
 });
 
 axiosRetry(apiClient, {
