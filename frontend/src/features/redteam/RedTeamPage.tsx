@@ -71,6 +71,14 @@ const RedTeamPage: React.FC = () => {
   const [mode, setMode] = useState<'live' | 'simulated'>('live');
   const [listeningScenario, setListeningScenario] = useState<ScenarioInfo | null>(null);
   
+  React.useEffect(() => {
+    fetch(`http://${window.location.hostname}:8000/pipeline/mode`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: mode })
+    }).catch(console.error);
+  }, [mode]);
+  
   const allAlerts = useAlertStore((state) => state.alerts);
 
   const loadScenarios = async () => {

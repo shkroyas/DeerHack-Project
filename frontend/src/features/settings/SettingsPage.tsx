@@ -1,10 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { agentsService } from '@services/agents.service';
 import { Settings, Shield, Server, Key, Download } from 'lucide-react';
 import { queryKeys } from '@lib/queryKeys';
 
 const SettingsPage: React.FC = () => {
+  const [liveMode, setLiveMode] = useState(true);
+
+  useEffect(() => {
+    fetch(`http://${window.location.hostname}:8000/pipeline/mode`)
+      .then(res => res.json())
+      .then(data => setLiveMode(data.mode === 'live'))
+      .catch(console.error);
+  }, []);
+
+  const toggleLiveMode = () => {
+    const newMode = !liveMode;
+    setLiveMode(newMode);
+    fetch(`http://${window.location.hostname}:8000/pipeline/mode`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: newMode ? 'live' : 'simulated' })
+    }).catch(console.error);
+  };
+
   const { data: agents } = useQuery({
     queryKey: queryKeys.agents.health,
     queryFn: agentsService.getHealth,
@@ -36,8 +55,11 @@ const SettingsPage: React.FC = () => {
                   <div className="text-sm font-medium text-white">Live Mode</div>
                   <div className="text-xs text-text-muted">Use real backend services instead of mock data</div>
                 </div>
-                <div className="w-10 h-6 bg-challenge-c4 rounded-full relative cursor-pointer">
-                  <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1" />
+                <div 
+                  className={`w-10 h-6 rounded-full relative cursor-pointer ${liveMode ? 'bg-challenge-c4' : 'bg-background-darker'}`}
+                  onClick={toggleLiveMode}
+                >
+                  <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all duration-300 ${liveMode ? 'right-1' : 'left-1'}`} />
                 </div>
               </div>
               <div className="flex items-center justify-between p-3 rounded bg-background-primary/50 border border-background-border">

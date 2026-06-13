@@ -22,8 +22,28 @@ from api.schemas import (
     ResponseActionResponse,
 )
 from api.utils import build_flow_record
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/pipeline", tags=["Pipeline"])
+
+class ModeRequest(BaseModel):
+    mode: str
+
+@router.post("/mode")
+def set_pipeline_mode(req: ModeRequest):
+    from api.simulator import start_simulator, stop_simulator
+    if req.mode == "live":
+        stop_simulator()
+    else:
+        start_simulator()
+    return {"status": "ok", "mode": req.mode}
+
+@router.get("/mode")
+def get_pipeline_mode():
+    from api.simulator import _SIMULATOR_RUNNING
+    return {"mode": "simulated" if _SIMULATOR_RUNNING else "live"}
+
+
 
 # ── Module-level FPR tracking ─────────────────────────────────────────────────
 # Tracks benign/anomaly records to calculate the real False Positive Rate.
@@ -305,7 +325,7 @@ def _run_pipeline_on_record(record, reg: AgentRegistry) -> PipelineResponse:
 
 
 @router.post("/run", response_model=PipelineResponse)
-def pipeline_run(
+async def pipeline_run(
     req: FlowRecordRequest,
     reg: AgentRegistry = Depends(get_registry),
 ):
@@ -327,7 +347,7 @@ def pipeline_run(
 
 
 @router.post("/apt-demo", response_model=List[PipelineResponse])
-def pipeline_apt_demo(
+async def pipeline_apt_demo(
     reg: AgentRegistry = Depends(get_registry),
 ):
     """
