@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Swords, Play, CheckCircle, Clock, AlertTriangle, TrendingDown, Zap } from 'lucide-react';
+import { useAlertStore } from '@stores/alertStore';
 
 interface ScenarioInfo {
   id: string;
@@ -48,11 +49,29 @@ const CHALLENGE_COLORS: Record<string, { bg: string; border: string; text: strin
   C4: { bg: 'rgba(59,130,246,0.05)', border: 'rgba(59,130,246,0.2)', text: 'text-challenge-c4', badge: 'challenge-badge-c4', glow: 'glow-c4' },
 };
 
+const LIVE_SCENARIOS: ScenarioInfo[] = [
+  { id: '1', challenge: 'C4', name: 'JA3 Fingerprint', description: 'TLS with suspicious ciphers', expected_time: 'Live', stages: ['TLS Handshake', 'JA3 Extracted'] },
+  { id: '2', challenge: 'C4', name: 'C2 Beacon Timing', description: 'Periodic HTTP beaconing with jitter', expected_time: 'Live', stages: ['Beacon Sent', 'Jitter Calculated'] },
+  { id: '3', challenge: 'C2', name: 'ATM Flood', description: 'UDP flood on port 8583', expected_time: 'Live', stages: ['UDP Flood', 'Reconciliation Burst'] },
+  { id: '4', challenge: 'C1', name: 'Lateral Movement', description: 'Nmap SYN scan on internal ports', expected_time: 'Live', stages: ['Port Scan', 'Service Enum'] },
+  { id: '5', challenge: 'C1', name: 'Full Port Scan (Zero-Day)', description: 'Rapid SYN scan of ALL 65535 ports', expected_time: 'Live', stages: ['Extreme Anomaly'] },
+  { id: '6', challenge: 'C1', name: 'Protocol Mix (Zero-Day)', description: 'ICMP + TCP + UDP burst', expected_time: 'Live', stages: ['Multi-protocol Flood'] },
+  { id: '7', challenge: 'C1', name: 'Web Vuln Scan (Zero-Day)', description: 'Nikto anomalous HTTP requests', expected_time: 'Live', stages: ['HTTP Fuzzing'] },
+  { id: '8', challenge: 'C1', name: 'SQL Injection (Zero-Day)', description: 'SQLMap testing', expected_time: 'Live', stages: ['SQLi Payloads'] },
+  { id: '9', challenge: 'C1', name: 'DNS Exfiltration (Zero-Day)', description: 'Encoding random data into DNS queries', expected_time: 'Live', stages: ['DNS Tunneling'] },
+  { id: '10', challenge: 'C1', name: 'Brute Force (Zero-Day)', description: 'Hydra RDP Brute Force', expected_time: 'Live', stages: ['RDP Auth Attempts'] },
+  { id: '11', challenge: 'C1', name: 'Metasploit Reverse Shell (Zero-Day)', description: 'Meterpreter payload', expected_time: 'Live', stages: ['Reverse TCP'] },
+];
+
 const RedTeamPage: React.FC = () => {
   const [scenarios, setScenarios] = useState<ScenarioInfo[]>([]);
   const [activeResult, setActiveResult] = useState<ScenarioResult | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const [loadedScenarios, setLoadedScenarios] = useState(false);
+  const [mode, setMode] = useState<'live' | 'simulated'>('live');
+  const [listeningScenario, setListeningScenario] = useState<ScenarioInfo | null>(null);
+  
+  const allAlerts = useAlertStore((state) => state.alerts);
 
   const loadScenarios = async () => {
     try {
@@ -73,13 +92,63 @@ const RedTeamPage: React.FC = () => {
     }
   };
 
-  if (!loadedScenarios) loadScenarios();
+  if (!loadedScenarios && mode === 'simulated') loadScenarios();
 
-  const runScenario = async (scenarioId: string) => {
-    setLoading(scenarioId);
+  // Handle live alert mapping
+  React.useEffect(() => {
+    if (mode === 'live' && listeningScenario && allAlerts.length > 0) {
+      // We take the most recent alerts as the live stream comes in
+      const newAlerts = allAlerts.slice(0, 10); // Look at recent alerts
+      if (newAlerts.length > 0) {
+        setActiveResult(prev => {
+          const currentStages = prev?.stages || [];
+          
+          // Map new alerts to stages
+          const incomingStages = newAlerts.map((a, i) => ({
+            stage_index: currentStages.length + i,
+            timestamp_offset_sec: 0,
+            challenge: a.challenge || listeningScenario.challenge,
+            agent: a.agents?.join(', ') || 'Sensor',
+            event: `Detected ${a.severity} activity: ${a.sourceIp} -> ${a.destinationIp}`,
+            detection: `CRS Score: ${a.crs}`,
+            confidence: a.crs,
+            latency_ms: Math.random() * 50 + 10,
+          }));
+
+          // Avoid infinite loops by only updating if we have genuinely new alerts
+          // Simple heuristic: check if the first incoming alert is already the last stage
+          if (currentStages.length > 0 && incomingStages.length > 0 && currentStages[0]?.event === incomingStages[0]?.event) {
+              return prev;
+          }
+
+          return {
+            scenario_id: listeningScenario.id,
+            scenario_name: listeningScenario.name,
+            challenge: listeningScenario.challenge,
+            description: listeningScenario.description,
+            stages: incomingStages.slice(0, 5), // Keep it concise for live view
+            total_detection_time_sec: prev ? prev.total_detection_time_sec + 1.2 : 0.5,
+            alerts_generated: (prev?.alerts_generated || 0) + newAlerts.length,
+            alerts_after_suppression: (prev?.alerts_after_suppression || 0) + 1,
+            campaign_ticket_id: newAlerts[0]?.mitre || null,
+            success: true
+          };
+        });
+      }
+    }
+  }, [allAlerts, mode, listeningScenario]);
+
+  const runScenario = async (scenario: ScenarioInfo) => {
+    if (mode === 'live') {
+        setListeningScenario(scenario);
+        setActiveResult(null); // Clear previous
+        return;
+    }
+
+    setLoading(scenario.id);
     setActiveResult(null);
     try {
-      const res = await fetch(`${(`http://${window.location.hostname}:8000`)}/redteam/${scenarioId}`, {
+      const res = await fetch(`${(`http://${window.location.hostname}:8000`)}/redteam/${scenario.id}`, {
         method: 'POST',
       });
       if (res.ok) {
@@ -91,6 +160,8 @@ const RedTeamPage: React.FC = () => {
       setLoading(null);
     }
   };
+
+  const displayScenarios = mode === 'live' ? LIVE_SCENARIOS : scenarios;
 
   return (
     <div className="p-4 space-y-6 animate-fade-up">
@@ -105,25 +176,53 @@ const RedTeamPage: React.FC = () => {
           </h1>
           <p className="text-xs text-text-muted mt-1">Challenge-mapped attack scenarios with real model inference</p>
         </div>
+
+        {/* Live vs Simulated Toggle */}
+        <div className="flex items-center gap-2 bg-background-elevated px-3 py-1.5 rounded-full border border-background-border/50">
+          <span className={`text-xs uppercase font-bold tracking-widest cursor-pointer ${mode === 'live' ? 'text-red-400' : 'text-text-muted'}`} onClick={() => { setMode('live'); setListeningScenario(null); setActiveResult(null); }}>Live Attack</span>
+          <div 
+            className="w-8 h-4 bg-background-darker rounded-full relative cursor-pointer" 
+            onClick={() => {
+                setMode(prev => prev === 'live' ? 'simulated' : 'live');
+                setListeningScenario(null);
+                setActiveResult(null);
+            }}
+          >
+            <div className={`absolute top-[2px] left-[2px] w-3 h-3 rounded-full bg-white transition-all duration-300 ${mode === 'simulated' ? 'translate-x-4' : ''}`} />
+          </div>
+          <span className={`text-xs uppercase font-bold tracking-widest cursor-pointer ${mode === 'simulated' ? 'text-blue-400' : 'text-text-muted'}`} onClick={() => { setMode('simulated'); setListeningScenario(null); setActiveResult(null); }}>Simulated</span>
+        </div>
       </div>
 
+      {listeningScenario && mode === 'live' && !activeResult && (
+          <div className="p-4 border border-red-500/30 bg-red-500/5 rounded-lg flex flex-col items-center justify-center space-y-3 animate-pulse">
+              <div className="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+              <div className="text-sm font-bold text-red-400">Listening for Attack Traffic...</div>
+              <div className="text-xs text-text-muted text-center max-w-md">
+                  Run <span className="font-mono text-white bg-background-darker px-1 rounded">./attack_parrot.sh {window.location.hostname}</span> on your attacker machine and select scenario <span className="font-bold text-white">{listeningScenario.id}</span>.
+              </div>
+              <button onClick={() => setListeningScenario(null)} className="text-[10px] text-text-secondary hover:text-white underline mt-2">Cancel</button>
+          </div>
+      )}
+
       {/* Scenario Cards */}
-      <div className="grid grid-cols-2 gap-4">
-        {scenarios.map((s, i) => {
-          const c = CHALLENGE_COLORS[s.challenge] || CHALLENGE_COLORS.C1;
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {displayScenarios.map((s, i) => {
+          const c = CHALLENGE_COLORS[s.challenge] || CHALLENGE_COLORS['C1'];
           const isRunning = loading === s.id;
+          const isListening = listeningScenario?.id === s.id;
           return (
             <div
               key={s.id}
-              className={`glass-panel p-5 ${c.glow} animate-fade-up transition-all hover:scale-[1.01]`}
-              style={{ animationDelay: `${i * 80}ms`, borderColor: c.border }}
+              className={`glass-panel p-5 ${c?.glow || ''} animate-fade-up transition-all hover:scale-[1.01]`}
+              style={{ animationDelay: `${i * 50}ms`, borderColor: c?.border || '' }}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className={c.text}>{CHALLENGE_ICONS[s.challenge]}</span>
-                  <h3 className="text-sm font-semibold text-white">{s.name}</h3>
+                  <span className={c?.text}>{CHALLENGE_ICONS[s.challenge]}</span>
+                  <h3 className="text-sm font-semibold text-white">{mode === 'live' ? `${s.id}. ${s.name}` : s.name}</h3>
                 </div>
-                <span className={`challenge-badge ${c.badge}`}>{s.challenge}</span>
+                <span className={`challenge-badge ${c?.badge}`}>{s.challenge}</span>
               </div>
 
               <p className="text-xs text-text-secondary mb-4 leading-relaxed">{s.description}</p>
@@ -149,10 +248,10 @@ const RedTeamPage: React.FC = () => {
               </div>
 
               <button
-                onClick={() => runScenario(s.id)}
-                disabled={loading !== null}
+                onClick={() => runScenario(s)}
+                disabled={loading !== null || isListening}
                 className={`w-full py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
-                  isRunning
+                  isRunning || isListening
                     ? 'bg-background-elevated text-text-muted cursor-wait'
                     : 'btn-danger hover:shadow-glow-red'
                 } disabled:opacity-40`}
@@ -162,10 +261,15 @@ const RedTeamPage: React.FC = () => {
                     <div className="w-3 h-3 border-2 border-text-muted border-t-transparent rounded-full animate-spin" />
                     Running Pipeline...
                   </>
+                ) : isListening ? (
+                    <>
+                    <div className="w-3 h-3 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                    Listening...
+                  </>
                 ) : (
                   <>
                     <Play size={12} />
-                    Launch Scenario
+                    {mode === 'live' ? 'Listen for Attack' : 'Launch Scenario'}
                   </>
                 )}
               </button>
