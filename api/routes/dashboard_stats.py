@@ -32,7 +32,7 @@ class DashboardKPIs(BaseModel):
     threats_today: int = Field(description="Total alerts processed today")
     false_positive_rate: float = Field(description="Current FPR percentage")
     intel_feed_age_min: Optional[float] = Field(description="Minutes since last threat feed refresh")
-    mean_response_time_min: float = Field(description="Mean response time in minutes")
+    mean_response_time_ms: float = Field(description="Mean response time in milliseconds")
     alerts_suppressed: int = Field(description="Total alerts suppressed")
     alerts_emitted: int = Field(description="Total alerts that passed all filters")
     suppression_rate: float = Field(description="Suppression rate as percentage")
@@ -132,11 +132,11 @@ def dashboard_kpis(reg: AgentRegistry = Depends(get_registry)):
     # Mean response time from actual pipeline latencies
     from api.routes.pipeline import _response_times
     if _response_times:
-        # Convert seconds to minutes for display
+        # Convert seconds to milliseconds for display
         mean_resp_sec = sum(_response_times) / len(_response_times)
-        mean_resp_min = round(mean_resp_sec / 60.0, 2)
+        mean_resp_ms = round(mean_resp_sec * 1000.0, 1)
     else:
-        mean_resp_min = 0.0
+        mean_resp_ms = 0.0
 
     # Threat feed age
     feed_age = None
@@ -159,7 +159,7 @@ def dashboard_kpis(reg: AgentRegistry = Depends(get_registry)):
         threats_today=threats_today,
         false_positive_rate=round(fpr, 1),
         intel_feed_age_min=round(feed_age, 1) if feed_age is not None else None,
-        mean_response_time_min=mean_resp_min,
+        mean_response_time_ms=mean_resp_ms,
         alerts_suppressed=suppressed,
         alerts_emitted=emitted,
         suppression_rate=round(suppression_rate, 1),

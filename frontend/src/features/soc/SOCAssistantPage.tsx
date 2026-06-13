@@ -103,9 +103,9 @@ const SOCAssistantPage: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex gap-4 p-4 animate-fade-up">
+    <div className="h-full flex flex-col xl:flex-row gap-4 p-2 md:p-4 animate-fade-up overflow-y-auto xl:overflow-hidden">
       {/* Main Chat */}
-      <div className="flex-1 flex flex-col glass-panel">
+      <div className="flex-1 flex flex-col glass-panel min-h-[500px] xl:min-h-0">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-background-border">
           <div className="flex items-center gap-3">
@@ -199,7 +199,7 @@ const SOCAssistantPage: React.FC = () => {
       </div>
 
       {/* Quick Questions Sidebar */}
-      <div className="w-72 space-y-4 flex-shrink-0">
+      <div className="w-full xl:w-72 space-y-4 flex-shrink-0">
         <div className="glass-panel p-4">
           <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">
             Quick Challenge Questions

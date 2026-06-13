@@ -25,7 +25,8 @@ export const AppShell: React.FC = () => {
         challenge: payload.challenge,
         label: payload.label,
         is_suppressed: payload.is_suppressed,
-        suppression_reason: payload.suppression_reason
+        suppression_reason: payload.suppression_reason,
+        raw_payload: payload.raw_payload || payload
       });
     }
   }, [addAlert]);
@@ -34,11 +35,11 @@ export const AppShell: React.FC = () => {
   useAlertStream(handleAlert);
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen relative overflow-hidden bg-background-primary">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto bg-background-primary">
+      <main className="flex-1 flex flex-col h-full overflow-hidden w-full relative z-0">
         <TopBar />
-        <div className="p-4">
+        <div className="flex-1 overflow-y-auto p-2 md:p-4 pb-20 md:pb-4">
           <Outlet />
         </div>
       </main>

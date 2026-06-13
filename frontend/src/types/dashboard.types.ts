@@ -5,7 +5,7 @@ export const DashboardKpiSchema = z.object({
   threatsToday: z.number(),
   falsePositiveRate: z.number(),
   intelFeedAgeMin: z.number().nullable().optional(),
-  meanResponseTimeMin: z.number(),
+  meanResponseTimeMs: z.number(),
   alertsSuppressed: z.number(),
   alertsEmitted: z.number(),
   suppressionRate: z.number(),

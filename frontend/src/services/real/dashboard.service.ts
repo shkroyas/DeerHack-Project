@@ -8,7 +8,7 @@ export const dashboardService = {
       threatsToday: res.data.threats_today,
       falsePositiveRate: res.data.false_positive_rate,
       intelFeedAgeMin: res.data.intel_feed_age_min ?? null,
-      meanResponseTimeMin: res.data.mean_response_time_min,
+      meanResponseTimeMs: res.data.mean_response_time_ms,
       alertsSuppressed: res.data.alerts_suppressed,
       alertsEmitted: res.data.alerts_emitted,
       suppressionRate: res.data.suppression_rate,

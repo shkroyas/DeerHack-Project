@@ -12,7 +12,8 @@ export const AlertSchema = z.object({
   challenge: z.enum(['C1','C2','C3','C4']).optional(),
   label: z.string().optional(),
   is_suppressed: z.boolean().optional(),
-  suppression_reason: z.string().optional()
+  suppression_reason: z.string().optional(),
+  raw_payload: z.any().optional()
 });
 
 export const AlertListSchema = z.object({

@@ -26,8 +26,8 @@ const AuditPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-4">
           <div className="glass-panel p-5 h-full">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-white">Action Ledger</h2>

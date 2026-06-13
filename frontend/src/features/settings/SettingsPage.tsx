@@ -41,7 +41,7 @@ const SettingsPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Col */}
         <div className="col-span-2 space-y-6">
           

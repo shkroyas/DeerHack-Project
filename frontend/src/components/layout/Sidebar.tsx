@@ -4,7 +4,7 @@ import { useUIStore } from '@stores/ui.store';
 import { usePermissions } from '@hooks/usePermissions';
 import {
   LayoutDashboard, AlertTriangle, Globe, Lock, Settings,
-  Swords, MessageSquare, Shield, ChevronLeft, ChevronRight, Activity
+  Swords, MessageSquare, Shield, ChevronLeft, ChevronRight, Activity, X
 } from 'lucide-react';
 
 const challengeColors: Record<string, string> = {
@@ -33,7 +33,7 @@ const NavItem: React.FC<NavItemProps> = ({ to, label, challenge, icon, disabled,
       className={`sidebar-nav-item ${active ? 'sidebar-nav-item-active' : ''} ${disabled ? 'opacity-30 pointer-events-none' : ''}`}
     >
       <div className="w-5 h-5 flex-shrink-0">{icon}</div>
-      {!collapsed && (
+      {(!collapsed || window.innerWidth < 768) && (
         <>
           <span className="flex-1 truncate">{label}</span>
           {challenge && (
@@ -46,71 +46,98 @@ const NavItem: React.FC<NavItemProps> = ({ to, label, challenge, icon, disabled,
 };
 
 export const Sidebar: React.FC = () => {
-  const collapsed = useUIStore((s) => s.sidebarCollapsed);
-  const toggle = useUIStore((s) => s.toggleSidebar);
+  const { sidebarCollapsed, mobileMenuOpen, toggleSidebar, setMobileMenuOpen } = useUIStore();
   const { hasRole } = usePermissions();
 
+  const handleLinkClick = () => {
+    if (window.innerWidth < 768) {
+      setMobileMenuOpen(false);
+    }
+  };
+
   return (
-    <aside
-      className={`glass-panel flex flex-col justify-between transition-all duration-300 ease-in-out ${
-        collapsed ? 'w-[64px]' : 'w-[240px]'
-      } h-full m-2 mr-0 p-3`}
-    >
-      {/* Top section */}
-      <div className="space-y-1">
+    <>
+      {/* Mobile Backdrop */}
+      {mobileMenuOpen && (
+        <div 
+          className="md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`glass-panel flex flex-col justify-between transition-all duration-300 ease-in-out fixed md:relative z-50 h-full m-0 md:m-2 md:mr-0 p-3 
+        ${mobileMenuOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full md:translate-x-0'} 
+        ${sidebarCollapsed ? 'md:w-[64px]' : 'md:w-[240px]'}`}
+      >
+        {/* Top section */}
+        <div className="space-y-1">
         {/* Logo */}
-        <div className="flex items-center gap-3 px-2 py-3 mb-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-            <Shield size={16} className="text-white" />
-          </div>
-          {!collapsed && (
-            <div className="animate-fade-up">
-              <div className="text-sm font-bold text-white tracking-wide">BankSentinel</div>
-              <div className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">SOC Dashboard</div>
+        <div className="flex items-center gap-3 px-2 py-3 mb-2 justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+              <Shield size={16} className="text-white" />
             </div>
-          )}
+            {(!sidebarCollapsed || mobileMenuOpen) && (
+              <div className="animate-fade-up">
+                <div className="text-sm font-bold text-white tracking-wide">BankSentinel</div>
+                <div className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">SOC Dashboard</div>
+              </div>
+            )}
+          </div>
+          {/* Mobile Close Button */}
+          <button 
+            className="md:hidden p-2 hover:bg-background-elevated rounded-lg"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <X size={18} className="text-text-muted" />
+          </button>
         </div>
 
         {/* Monitoring Section */}
-        {!collapsed && (
+        {(!sidebarCollapsed || mobileMenuOpen) && (
           <div className="text-[10px] text-text-muted uppercase tracking-[0.15em] px-3 pt-4 pb-1 font-semibold">
             Monitoring
           </div>
         )}
-        <NavItem to="/dashboard" label="Dashboard" challenge="C3" icon={<LayoutDashboard size={16} />} collapsed={collapsed} />
-        <NavItem to="/alerts" label="Live Alerts" challenge="C3" icon={<AlertTriangle size={16} />} collapsed={collapsed} />
+        <div onClick={handleLinkClick}><NavItem to="/dashboard" label="Dashboard" challenge="C3" icon={<LayoutDashboard size={16} />} collapsed={sidebarCollapsed} /></div>
+        <div onClick={handleLinkClick}><NavItem to="/alerts" label="Live Alerts" challenge="C3" icon={<AlertTriangle size={16} />} collapsed={sidebarCollapsed} /></div>
 
         {/* Analysis Section */}
-        {!collapsed && (
+        {(!sidebarCollapsed || mobileMenuOpen) && (
           <div className="text-[10px] text-text-muted uppercase tracking-[0.15em] px-3 pt-5 pb-1 font-semibold">
             Analysis
           </div>
         )}
-        <NavItem to="/intel" label="Threat Intel" challenge="C4" icon={<Globe size={16} />} collapsed={collapsed} />
-        <NavItem to="/redteam" label="Red Team" icon={<Swords size={16} />} collapsed={collapsed} />
-        <NavItem to="/soc" label="SOC Assistant" challenge="C3" icon={<MessageSquare size={16} />} collapsed={collapsed} />
+        <div onClick={handleLinkClick}><NavItem to="/intel" label="Threat Intel" challenge="C4" icon={<Globe size={16} />} collapsed={sidebarCollapsed} /></div>
+        <div onClick={handleLinkClick}><NavItem to="/redteam" label="Red Team" icon={<Swords size={16} />} collapsed={sidebarCollapsed} /></div>
+        <div onClick={handleLinkClick}><NavItem to="/soc" label="SOC Assistant" challenge="C3" icon={<MessageSquare size={16} />} collapsed={sidebarCollapsed} /></div>
 
         {/* Operations Section */}
-        {!collapsed && (
+        {(!sidebarCollapsed || mobileMenuOpen) && (
           <div className="text-[10px] text-text-muted uppercase tracking-[0.15em] px-3 pt-5 pb-1 font-semibold">
             Operations
           </div>
         )}
-        <NavItem
-          to="/audit" label="Audit Chain" challenge="C2" icon={<Lock size={16} />}
-          disabled={!hasRole('COMPLIANCE_OFFICER') && !hasRole('ADMIN')} collapsed={collapsed}
-        />
-        <NavItem
-          to="/settings" label="Settings" icon={<Settings size={16} />}
-          disabled={!hasRole('ADMIN')} collapsed={collapsed}
-        />
+        <div onClick={handleLinkClick}>
+          <NavItem
+            to="/audit" label="Audit Chain" challenge="C2" icon={<Lock size={16} />}
+            disabled={!hasRole('COMPLIANCE_OFFICER') && !hasRole('ADMIN')} collapsed={sidebarCollapsed}
+          />
+        </div>
+        <div onClick={handleLinkClick}>
+          <NavItem
+            to="/settings" label="Settings" icon={<Settings size={16} />}
+            disabled={!hasRole('ADMIN')} collapsed={sidebarCollapsed}
+          />
+        </div>
       </div>
 
       {/* Bottom section */}
       <div className="space-y-3">
         {/* Agent Status indicator */}
-        {!collapsed && (
-          <div className="glass-panel p-3 space-y-2">
+        {(!sidebarCollapsed || mobileMenuOpen) && (
+          <div className="glass-panel p-3 space-y-2 hidden md:block">
             <div className="flex items-center gap-2">
               <Activity size={12} className="text-challenge-c3" />
               <span className="text-[10px] text-text-secondary uppercase tracking-wider font-semibold">System Status</span>
@@ -124,10 +151,10 @@ export const Sidebar: React.FC = () => {
 
         {/* Collapse toggle */}
         <button
-          onClick={toggle}
-          className="w-full flex items-center justify-center p-2 rounded-lg hover:bg-background-elevated transition-colors text-text-muted hover:text-text-primary"
+          onClick={toggleSidebar}
+          className="w-full hidden md:flex items-center justify-center p-2 rounded-lg hover:bg-background-elevated transition-colors text-text-muted hover:text-text-primary"
         >
-          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
 
         {/* User */}
@@ -135,7 +162,7 @@ export const Sidebar: React.FC = () => {
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-challenge-c1 to-challenge-c4 flex items-center justify-center flex-shrink-0 ring-2 ring-background-border">
             <span className="text-xs font-bold text-white">AK</span>
           </div>
-          {!collapsed && (
+          {(!sidebarCollapsed || mobileMenuOpen) && (
             <div className="min-w-0">
               <div className="text-sm text-text-primary font-medium truncate">Ankit Kumar</div>
               <div className="text-[10px] text-text-muted uppercase tracking-wider">Admin</div>
@@ -144,5 +171,6 @@ export const Sidebar: React.FC = () => {
         </div>
       </div>
     </aside>
+    </>
   );
 };

@@ -229,7 +229,7 @@ const RedTeamPage: React.FC = () => {
       )}
 
       {/* Scenario Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {displayScenarios.map((s, i) => {
           const c = CHALLENGE_COLORS[s.challenge] || CHALLENGE_COLORS['C1'];
           const isRunning = loading === s.id;
@@ -317,8 +317,8 @@ const RedTeamPage: React.FC = () => {
           </div>
 
           {/* Summary stats */}
-          <div className="grid grid-cols-4 gap-3 mb-4">
-            <div className="stat-card">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+            <div className="glass-panel p-3">
               <div className="text-[10px] text-text-muted uppercase">Alerts Generated</div>
               <div className="text-lg font-bold text-white">{activeResult.alerts_generated}</div>
             </div>

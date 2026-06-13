@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardService } from '@services/dashboard.service';
 import { queryKeys } from '@lib/queryKeys';
-import { ShieldAlert, TrendingDown, Wifi, Clock, Zap } from 'lucide-react';
+import { useUIStore } from '@stores/ui.store';
+import { ShieldAlert, TrendingDown, Wifi, Clock, Zap, Menu } from 'lucide-react';
 
 const AnimatedCounter: React.FC<{ value: number | string; suffix?: string }> = ({ value, suffix = '' }) => (
   <div className="animate-count-up">
@@ -12,6 +13,7 @@ const AnimatedCounter: React.FC<{ value: number | string; suffix?: string }> = (
 );
 
 export const TopBar: React.FC = () => {
+  const setMobileMenuOpen = useUIStore(s => s.setMobileMenuOpen);
   const { data } = useQuery({
     queryKey: queryKeys.dashboard.kpis,
     queryFn: dashboardService.getKpis,
@@ -65,16 +67,26 @@ export const TopBar: React.FC = () => {
       challenge: 'C3',
       challengeClass: 'challenge-badge-c3',
       icon: <Clock size={14} />,
-      value: `${data?.meanResponseTimeMin ?? 3.8}`,
-      suffix: 'min',
+      value: `${data?.meanResponseTimeMs ?? 38.5}`,
+      suffix: 'ms',
       sub: `Emitted: ${data?.alertsEmitted ?? 0} alerts`,
       glowClass: 'glow-c3',
     },
   ];
 
   return (
-    <header className="px-4 py-3 flex items-center justify-between gap-4">
-      <div className="flex-1 grid grid-cols-4 gap-3">
+    <header className="px-2 md:px-4 py-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="flex w-full md:w-auto justify-between items-center md:hidden mb-2">
+        <div className="text-white font-bold text-lg">BankSentinel</div>
+        <button 
+          onClick={() => setMobileMenuOpen(true)}
+          className="p-2 hover:bg-background-elevated rounded-lg text-text-muted hover:text-white transition-colors"
+        >
+          <Menu size={24} />
+        </button>
+      </div>
+
+      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full">
         {kpis.map((kpi, i) => (
           <div
             key={kpi.label}

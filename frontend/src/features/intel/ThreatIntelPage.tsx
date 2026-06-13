@@ -45,7 +45,7 @@ const ThreatIntelPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Local Feeds (OSINT) */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -102,7 +102,7 @@ const ThreatIntelPage: React.FC = () => {
               <div className="text-xs text-text-muted text-center py-4">Syncing with NRB Federation...</div>
             ) : federation ? (
               <div className="relative z-10 space-y-4">
-                <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                   <div className="p-3 rounded-lg bg-challenge-c1/10 border border-challenge-c1/20">
                     <div className="text-[10px] text-text-muted uppercase mb-1">Member Banks</div>
                     <div className="text-xl font-bold text-challenge-c1">{federation.member_banks}</div>
