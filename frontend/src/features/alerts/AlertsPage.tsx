@@ -14,11 +14,11 @@ const AlertsPage: React.FC = () => {
   const displayAlerts = alerts.slice(0, 50);
 
   return (
-    <div className="grid grid-cols-4 gap-4 p-4">
-      <div className="col-span-1">
+    <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 p-4">
+      <div className="lg:col-span-1">
         <AlertFilters count={alerts.length} onClear={() => null} />
       </div>
-      <div className="col-span-3">
+      <div className="lg:col-span-3">
         <AlertTable alerts={displayAlerts} onAlertClick={(id) => setSelected(alerts.find((a) => a.id === id) ?? null)} />
       </div>
       <AlertDetailDrawer alert={selected} onClose={() => setSelected(null)} />

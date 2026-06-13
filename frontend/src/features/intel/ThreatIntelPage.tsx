@@ -17,7 +17,7 @@ const ThreatIntelPage: React.FC = () => {
     const loadFed = async () => {
       setLoadingFed(true);
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}/federation/threat-feed`);
+        const res = await fetch(`${(`http://${window.location.hostname}:8000`)}/federation/threat-feed`);
         if (res.ok) {
           setFederation(await res.json());
         }

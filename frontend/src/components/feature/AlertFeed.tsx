@@ -53,52 +53,110 @@ const priorityActions: Record<string, string[]> = {
 export const AlertFeed: React.FC<{ initialAlerts?: unknown[] }> = ({ initialAlerts = [] }) => {
   const [alerts, setAlerts] = useState<AlertData[]>(initialAlerts as AlertData[]);
   const [isConnected, setIsConnected] = useState(false);
+  const [feedMode, setFeedMode] = useState<'live' | 'simulated'>('live');
   const queryClient = useQueryClient();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let ws: WebSocket | null = null;
+    let pollInterval: NodeJS.Timeout | null = null;
+
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const baseUrl = import.meta.env.VITE_API_BASE_URL
+    let baseUrl = import.meta.env.VITE_API_BASE_URL
       ? import.meta.env.VITE_API_BASE_URL.replace(/^https?:\/\//, '')
-      : '127.0.0.1:8000';
+      : `${window.location.hostname}:8000`;
+      
+    if (baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1')) {
+        baseUrl = `${window.location.hostname}:8000`;
+    }
 
-    const ws = new WebSocket(`${protocol}//${baseUrl}/ws/alerts`);
+    if (feedMode === 'live') {
+      ws = new WebSocket(`${protocol}//${baseUrl}/ws/alerts`);
 
-    ws.onopen = () => setIsConnected(true);
+      ws.onopen = () => setIsConnected(true);
 
-    ws.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data);
-        if (msg.type === 'alert' && msg.data) {
-          setAlerts((prev) => [msg.data as AlertData, ...prev].slice(0, 50));
-          queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-          if (scrollRef.current) {
-            scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === 'alert' && msg.data) {
+            setAlerts((prev) => [msg.data as AlertData, ...prev].slice(0, 50));
+            queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+            if (scrollRef.current) {
+              scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+            }
           }
+        } catch (e) {
+          console.error('Failed to parse WS message', e);
         }
-      } catch (e) {
-        console.error('Failed to parse WS message', e);
-      }
+      };
+
+      ws.onclose = () => setIsConnected(false);
+    } else {
+      setIsConnected(true);
+      pollInterval = setInterval(async () => {
+        try {
+          const res = await fetch(`http://${baseUrl}/pipeline/apt-demo`, {
+            method: 'POST'
+          });
+          const data = await res.json();
+          if (Array.isArray(data)) {
+             // Extract alert items from PipelineResponse
+             const newAlerts = data.map(d => ({
+               record_id: d.record_id,
+               src_ip: d.src_ip,
+               dst_ip: d.dst_ip,
+               crs: d.crs_score,
+               priority: d.priority,
+               is_suppressed: d.is_suppressed,
+               suppression_reason: d.suppression_reason,
+               agents_fired: Object.keys(d.agent_results || {}).filter(k => d.agent_results[k].is_alert),
+               mitre_technique: ''
+             }));
+             setAlerts(prev => [...newAlerts, ...prev].slice(0, 50));
+             queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+             if (scrollRef.current) {
+               scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+             }
+          }
+        } catch (e) {
+          console.error('Failed to fetch simulated data', e);
+        }
+      }, 5000);
+    }
+
+    return () => { 
+      if (ws) ws.close(); 
+      if (pollInterval) clearInterval(pollInterval);
     };
-
-    ws.onclose = () => setIsConnected(false);
-
-    return () => { ws.close(); };
-  }, [queryClient]);
+  }, [queryClient, feedMode]);
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center gap-2 mb-3 px-1">
-        <span className={isConnected ? 'status-dot-online' : 'status-dot-offline'} />
-        <span className="text-[10px] text-text-muted uppercase tracking-wider">
-          {isConnected ? 'Connected to Live Stream' : 'Reconnecting...'}
-        </span>
+    <div className="flex flex-col h-full min-h-0">
+      <div className="flex items-center justify-between mb-3 px-1">
+        <div className="flex items-center gap-2">
+          <span className={isConnected ? 'status-dot-online' : 'status-dot-offline'} />
+          <span className="text-[10px] text-text-muted uppercase tracking-wider">
+            {feedMode === 'live' ? (isConnected ? 'Live Socket Connected' : 'Reconnecting...') : 'Simulated Feed Active'}
+          </span>
+        </div>
+        
+        {/* Toggle Switch */}
+        <div className="flex items-center gap-2 bg-background-elevated px-2 py-1 rounded-full border border-background-border/50">
+          <span className={`text-[10px] uppercase font-bold tracking-widest cursor-pointer ${feedMode === 'live' ? 'text-blue-400' : 'text-text-muted'}`} onClick={() => setFeedMode('live')}>Live</span>
+          <div 
+            className="w-6 h-3 bg-background-darker rounded-full relative cursor-pointer" 
+            onClick={() => setFeedMode(prev => prev === 'live' ? 'simulated' : 'live')}
+          >
+            <div className={`absolute top-[2px] left-[2px] w-2 h-2 rounded-full bg-white transition-all duration-300 ${feedMode === 'simulated' ? 'translate-x-3' : ''}`} />
+          </div>
+          <span className={`text-[10px] uppercase font-bold tracking-widest cursor-pointer ${feedMode === 'simulated' ? 'text-blue-400' : 'text-text-muted'}`} onClick={() => setFeedMode('simulated')}>Simulated</span>
+        </div>
       </div>
 
       <div ref={scrollRef} className="space-y-2 flex-1 overflow-y-auto min-h-0 pr-1">
         {alerts.length === 0 && (
           <div className="text-center py-8">
-            <div className="text-text-muted text-xs">Waiting for live traffic...</div>
+            <div className="text-text-muted text-xs">Waiting for traffic...</div>
           </div>
         )}
 

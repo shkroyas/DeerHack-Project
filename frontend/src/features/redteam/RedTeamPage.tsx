@@ -56,7 +56,7 @@ const RedTeamPage: React.FC = () => {
 
   const loadScenarios = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}/redteam/scenarios`);
+      const res = await fetch(`${(`http://${window.location.hostname}:8000`)}/redteam/scenarios`);
       if (res.ok) {
         setScenarios(await res.json());
         setLoadedScenarios(true);
@@ -79,7 +79,7 @@ const RedTeamPage: React.FC = () => {
     setLoading(scenarioId);
     setActiveResult(null);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}/redteam/${scenarioId}`, {
+      const res = await fetch(`${(`http://${window.location.hostname}:8000`)}/redteam/${scenarioId}`, {
         method: 'POST',
       });
       if (res.ok) {

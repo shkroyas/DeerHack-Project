@@ -43,7 +43,7 @@ export const SOCChatWidget: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}/soc/ask`, {
+      const res = await fetch(`${(`http://${window.location.hostname}:8000`)}/soc/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question }),

@@ -32,9 +32,9 @@ const DashboardPage: React.FC = () => {
       <AgentHealthPanel />
 
       {/* Main Grid: 3 columns */}
-      <div className="grid grid-cols-12 gap-4">
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4">
         {/* LEFT: Attack Graph [C1] + CRS + Regime Badge */}
-        <div className="col-span-5 space-y-4">
+        <div className="lg:col-span-5 space-y-4">
           <div className="glass-panel p-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-white">Network Threat Topology</h2>
@@ -67,24 +67,28 @@ const DashboardPage: React.FC = () => {
         </div>
 
         {/* CENTER: Alert Feed [C3] */}
-        <div className="col-span-4 space-y-4">
-          <div className="glass-panel p-4 h-full">
+        <div className="lg:col-span-4 space-y-4">
+          <div className="glass-panel p-4 h-[600px] lg:h-full flex flex-col min-h-0">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-white">Live Alert Feed</h2>
               <span className="challenge-badge challenge-badge-c3">C3</span>
             </div>
-            <AlertFeed />
+            <div className="flex-1 overflow-hidden">
+              <AlertFeed />
+            </div>
           </div>
         </div>
 
         {/* RIGHT: SOC Assistant [C3] */}
-        <div className="col-span-3 space-y-4">
-          <SOCChatWidget />
+        <div className="lg:col-span-3 space-y-4">
+          <div className="h-[500px] lg:h-full">
+             <SOCChatWidget />
+          </div>
         </div>
       </div>
 
       {/* Bottom Grid: 3 equal columns */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4">
         {/* Encrypted Traffic [C4] */}
         <div className="animate-fade-up animate-delay-3">
           <EncryptedTrafficPanel />
