@@ -130,7 +130,6 @@ from api.routes.pipeline import router as pipeline_router
 from api.routes.response import router as response_router
 from api.routes.threat_intel import router as threat_intel_router
 from api.routes.stats import router as stats_router
-from api.routes.soc import router as soc_router
 from api.routes.redteam import router as redteam_router
 from api.routes.federation import router as federation_router
 from api.routes.dashboard_stats import router as dashboard_stats_router
@@ -146,7 +145,6 @@ app.include_router(pipeline_router)
 app.include_router(response_router)
 app.include_router(threat_intel_router)
 app.include_router(stats_router)
-app.include_router(soc_router)
 app.include_router(redteam_router)
 app.include_router(federation_router)
 app.include_router(dashboard_stats_router)

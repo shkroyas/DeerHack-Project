@@ -4,7 +4,7 @@ import { useUIStore } from '@stores/ui.store';
 import { usePermissions } from '@hooks/usePermissions';
 import {
   LayoutDashboard, AlertTriangle, Globe, Lock, Settings,
-  Swords, MessageSquare, Shield, ChevronLeft, ChevronRight, Activity, X
+  Swords, Shield, ChevronLeft, ChevronRight, Activity, X
 } from 'lucide-react';
 
 const challengeColors: Record<string, string> = {
@@ -111,7 +111,6 @@ export const Sidebar: React.FC = () => {
           )}
           <div onClick={handleLinkClick}><NavItem to="/intel" label="Threat Intel" challenge="C4" icon={<Globe size={16} />} collapsed={sidebarCollapsed} /></div>
           <div onClick={handleLinkClick}><NavItem to="/redteam" label="Red Team" icon={<Swords size={16} />} collapsed={sidebarCollapsed} /></div>
-          <div onClick={handleLinkClick}><NavItem to="/soc" label="SOC Assistant" challenge="C3" icon={<MessageSquare size={16} />} collapsed={sidebarCollapsed} /></div>
 
           {/* Operations Section */}
           {(!sidebarCollapsed || mobileMenuOpen) && (

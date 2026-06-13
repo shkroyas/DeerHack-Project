@@ -42,7 +42,6 @@ BankSentinel natively detects and mitigates the most dangerous vectors targeting
 *   **Red Team Simulator**: A built-in adversary simulation engine that fires complex attack chains at the pipeline to demonstrate the system's alert suppression capabilities (e.g. squashing hundreds of duplicate ransomware propagation alerts down to a single incident).
 *   **Automated Containment & Cryptographic Ledger**: Bypasses human reaction times by autonomously blocking IPs the millisecond a Critical alert is fused. All automated actions are logged using a SHA-256 cryptographic hash chain to guarantee tamper-proof records for auditors.
 *   **NRB Compliance Reporting**: One-click generation of PDF incident reports mapped directly to the Nepal Rastra Bank (NRB) Cyber Security Framework.
-*   **AI SOC Assistant**: An integrated LLM-powered chatbot that helps analysts query logs, explain alerts, summarize threat campaigns, and map attacks to the MITRE ATT&CK framework.
 
 ---
 
@@ -84,9 +83,9 @@ Here is a view of the finished BankSentinel product in action:
 ![SOC Dashboard](./output-1.png)
 *Real-time alert stream and multi-agent pipeline monitoring dashboard, showing active threat telemetry and Composite Risk Score (CRS).*
 
-### Threat Analysis & AI Assistant
-![AI Assistant & Analysis](./output-3.png)
-*Detailed threat analysis, alert fusion demonstration, and natural language interactions via the integrated SOC Assistant.*
+### Threat Analysis & Audit
+![Threat Analysis & Audit](./output-3.png)
+*Detailed threat analysis, alert fusion demonstration, and cryptographic audit visibility across the dashboard experience.*
 
 ---
 

@@ -12,7 +12,6 @@ const ThreatIntelPage = React.lazy(() => import('@features/intel/ThreatIntelPage
 const AuditPage = React.lazy(() => import('@features/compliance/AuditPage'));
 const SettingsPage = React.lazy(() => import('@features/settings/SettingsPage'));
 const RedTeamPage = React.lazy(() => import('@features/redteam/RedTeamPage'));
-const SOCAssistantPage = React.lazy(() => import('@features/soc/SOCAssistantPage'));
 
 const ErrorPage = () => (
   <div className="p-6">
@@ -83,16 +82,6 @@ const router = createBrowserRouter([
           <ProtectedRoute allowedRoles={[ROLE.SOC_ANALYST, ROLE.COMPLIANCE_OFFICER, ROLE.ADMIN]}>
             <Suspense fallback={<div>Loading...</div>}>
               <RedTeamPage />
-            </Suspense>
-          </ProtectedRoute>
-        )
-      },
-      {
-        path: 'soc',
-        element: (
-          <ProtectedRoute allowedRoles={[ROLE.SOC_ANALYST, ROLE.COMPLIANCE_OFFICER, ROLE.ADMIN]}>
-            <Suspense fallback={<div>Loading...</div>}>
-              <SOCAssistantPage />
             </Suspense>
           </ProtectedRoute>
         )

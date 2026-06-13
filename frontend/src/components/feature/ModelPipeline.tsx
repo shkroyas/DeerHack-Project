@@ -129,7 +129,7 @@ export const ModelPipeline: React.FC = () => {
   return (
     <div 
       ref={containerRef}
-      className="relative w-full h-[450px] lg:h-[550px] rounded-lg overflow-hidden border border-background-border group bg-background-elevated/20 flex flex-col justify-center cursor-grab active:cursor-grabbing"
+      className="relative w-full h-[320px] lg:h-[380px] rounded-lg overflow-hidden border border-background-border group bg-background-elevated/20 flex flex-col justify-center cursor-grab active:cursor-grabbing"
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUpOrLeave}

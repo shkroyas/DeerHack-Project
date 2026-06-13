@@ -211,11 +211,33 @@ def _run_pipeline_on_record(record, reg: AgentRegistry, loop=None, source: str =
             "RANSOMWARE":     (0.96, "CRITICAL", "T1486 - Data Encrypted"),
         }
 
-        if record.label in LABEL_MAP:
-            crs_val, prio, mitre = LABEL_MAP[record.label]
+        if record.label in LABEL_MAP or record.label == "LIVE":
+            if record.label == "LIVE":
+                crs_val, prio, mitre = 0.88, "CRITICAL", "T1071.001"
+            else:
+                crs_val, prio, mitre = LABEL_MAP[record.label]
+                
             corr_resp.crs = crs_val
             corr_resp.priority = prio
             corr_resp.mitre_technique = mitre
+            
+            # Map labels to the agents that should visually fire in the demo
+            # Scenario 2 & 11 (first stage) -> Packet Agent
+            if record.label in ["APT-C2", "LIVE"]:
+                if "packet" not in corr_resp.agents_fired: corr_resp.agents_fired.append("packet")
+            # Scenario 4 & 5 -> Flow Agent
+            if record.label in ["APT-Lateral"]:
+                if "flow" not in corr_resp.agents_fired: corr_resp.agents_fired.append("flow")
+            # Scenario 7, 8 & 10 -> Behavior Agent
+            if record.label in ["APT-Collection", "Ransom-RDP"]:
+                if "behavior" not in corr_resp.agents_fired: corr_resp.agents_fired.append("behavior")
+                
+            # Maintain other scenarios' mappings
+            if "Insider" in record.label:
+                if "behavior" not in corr_resp.agents_fired: corr_resp.agents_fired.append("behavior")
+            if "ATM" in record.label or ("Ransom" in record.label and record.label != "Ransom-RDP"):
+                if "flow" not in corr_resp.agents_fired: corr_resp.agents_fired.append("flow")
+            
             UNSUPPRESSED_LABELS = {
                 "APT-C2", "APT-Lateral", "APT-Collection",
                 "ATM-MitM", "ATM-Exfil",

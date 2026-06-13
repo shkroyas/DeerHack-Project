@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { agentsService } from '@services/agents.service';
-import { Settings, Shield, Server, Key, Download } from 'lucide-react';
+import { Settings, Shield, Server, Download } from 'lucide-react';
 import { queryKeys } from '@lib/queryKeys';
 
 const SettingsPage: React.FC = () => {
@@ -123,18 +123,6 @@ const SettingsPage: React.FC = () => {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-
-          <div className="glass-panel p-5">
-            <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-              <Key size={16} /> API Keys
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="geminiKey" className="text-xs text-text-muted block mb-1">Gemini API Key (SOC AI)</label>
-                <input id="geminiKey" type="password" className="input-dark w-full" defaultValue="************************" />
-              </div>
             </div>
           </div>
 

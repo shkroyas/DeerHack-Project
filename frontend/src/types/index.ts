@@ -9,5 +9,4 @@ export * from './intel.types';
 export * from './incident.types';
 export * from './redteam.types';
 export * from './response.types';
-export * from './soc.types';
 export * from './websocket.types';
