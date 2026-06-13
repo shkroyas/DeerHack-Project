@@ -1,5 +1,5 @@
 import React from 'react';
-import type { ComplianceStatus } from '@types/compliance.types';
+import type { ComplianceStatus } from '@/types/compliance.types';
 
 interface Props {
   /** Compliance status. */

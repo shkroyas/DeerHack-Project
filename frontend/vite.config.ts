@@ -28,7 +28,7 @@ export default defineConfig(async () => {
       '@lib': '/src/lib',
       '@services': '/src/services',
       '@stores': '/src/stores',
-      '@types': '/src/types'
+      '@/types': '/src/types'
     }
     }
   };

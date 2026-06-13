@@ -67,17 +67,17 @@ class SocketWrapper {
     if (!this.listeners[event]) {
       this.listeners[event] = [];
     }
-    this.listeners[event].push(handler);
+    this.listeners[event]?.push(handler);
   }
 
   off(event: string, handler: EventHandler) {
     if (!this.listeners[event]) return;
-    this.listeners[event] = this.listeners[event].filter(h => h !== handler);
+    this.listeners[event] = this.listeners[event]?.filter(h => h !== handler) || [];
   }
 
   emit(event: string, payload: any): void { // eslint-disable-line @typescript-eslint/no-explicit-any
     if (!this.listeners[event]) return;
-    this.listeners[event].forEach(handler => handler(payload));
+    this.listeners[event]?.forEach(handler => handler(payload));
   }
 
   send(message: any) { // eslint-disable-line @typescript-eslint/no-explicit-any

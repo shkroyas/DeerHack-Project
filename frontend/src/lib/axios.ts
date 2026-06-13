@@ -14,7 +14,7 @@ export const apiClient = axios.create({
 
 axiosRetry(apiClient, {
   retries: 2, retryCondition: (error) => {
-    return error.response?.status >= 500;
+    return (error.response?.status || 0) >= 500;
   }
 });
 

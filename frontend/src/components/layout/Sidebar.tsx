@@ -59,7 +59,7 @@ export const Sidebar: React.FC = () => {
     <>
       {/* Mobile Backdrop */}
       {mobileMenuOpen && (
-        <div 
+        <div
           className="md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
           onClick={() => setMobileMenuOpen(false)}
         />
@@ -72,105 +72,105 @@ export const Sidebar: React.FC = () => {
       >
         {/* Top section */}
         <div className="space-y-1">
-        {/* Logo */}
-        <div className="flex items-center gap-3 px-2 py-3 mb-2 justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-              <Shield size={16} className="text-white" />
+          {/* Logo */}
+          <div className="flex items-center gap-3 px-2 py-3 mb-2 justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#027373] to-[#11D9C5] flex items-center justify-center flex-shrink-0">
+                <Shield size={16} className="text-white" />
+              </div>
+              {(!sidebarCollapsed || mobileMenuOpen) && (
+                <div className="animate-fade-up">
+                  <div className="text-sm font-bold text-white tracking-wide">BankSentinel</div>
+                  <div className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">SOC Dashboard</div>
+                </div>
+              )}
+            </div>
+            {/* Mobile Close Button */}
+            <button
+              className="md:hidden p-2 hover:bg-background-elevated rounded-lg"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <X size={18} className="text-text-muted" />
+            </button>
+          </div>
+
+          {/* Monitoring Section */}
+          {(!sidebarCollapsed || mobileMenuOpen) && (
+            <div className="text-[10px] text-text-muted uppercase tracking-[0.15em] px-3 pt-4 pb-1 font-semibold">
+              Monitoring
+            </div>
+          )}
+          <div onClick={handleLinkClick}><NavItem to="/dashboard" label="Dashboard" challenge="C3" icon={<LayoutDashboard size={16} />} collapsed={sidebarCollapsed} /></div>
+          <div onClick={handleLinkClick}><NavItem to="/alerts" label="Live Alerts" challenge="C3" icon={<AlertTriangle size={16} />} collapsed={sidebarCollapsed} /></div>
+
+          {/* Analysis Section */}
+          {(!sidebarCollapsed || mobileMenuOpen) && (
+            <div className="text-[10px] text-text-muted uppercase tracking-[0.15em] px-3 pt-5 pb-1 font-semibold">
+              Analysis
+            </div>
+          )}
+          <div onClick={handleLinkClick}><NavItem to="/intel" label="Threat Intel" challenge="C4" icon={<Globe size={16} />} collapsed={sidebarCollapsed} /></div>
+          <div onClick={handleLinkClick}><NavItem to="/redteam" label="Red Team" icon={<Swords size={16} />} collapsed={sidebarCollapsed} /></div>
+          <div onClick={handleLinkClick}><NavItem to="/soc" label="SOC Assistant" challenge="C3" icon={<MessageSquare size={16} />} collapsed={sidebarCollapsed} /></div>
+
+          {/* Operations Section */}
+          {(!sidebarCollapsed || mobileMenuOpen) && (
+            <div className="text-[10px] text-text-muted uppercase tracking-[0.15em] px-3 pt-5 pb-1 font-semibold">
+              Operations
+            </div>
+          )}
+          <div onClick={handleLinkClick}>
+            <NavItem
+              to="/audit" label="Audit Chain" challenge="C2" icon={<Lock size={16} />}
+              disabled={!hasRole('COMPLIANCE_OFFICER') && !hasRole('ADMIN')} collapsed={sidebarCollapsed}
+            />
+          </div>
+          <div onClick={handleLinkClick}>
+            <NavItem
+              to="/settings" label="Settings" icon={<Settings size={16} />}
+              disabled={!hasRole('ADMIN')} collapsed={sidebarCollapsed}
+            />
+          </div>
+        </div>
+
+        {/* Bottom section */}
+        <div className="space-y-3">
+          {/* Agent Status indicator */}
+          {(!sidebarCollapsed || mobileMenuOpen) && (
+            <div className="glass-panel p-3 space-y-2 hidden md:block">
+              <div className="flex items-center gap-2">
+                <Activity size={12} className="text-challenge-c3" />
+                <span className="text-[10px] text-text-secondary uppercase tracking-wider font-semibold">System Status</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="status-dot-online" />
+                <span className="text-xs text-text-secondary">5 agents online</span>
+              </div>
+            </div>
+          )}
+
+          {/* Collapse toggle */}
+          <button
+            onClick={toggleSidebar}
+            className="w-full hidden md:flex items-center justify-center p-2 rounded-lg hover:bg-background-elevated transition-colors text-text-muted hover:text-text-primary"
+          >
+            {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
+
+          {/* User */}
+          <div className="flex items-center gap-3 px-2 py-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#027373] to-[#11D9C5] flex items-center justify-center flex-shrink-0 ring-2 ring-background-border">
+              <span className="text-xs font-bold text-white">KK</span>
             </div>
             {(!sidebarCollapsed || mobileMenuOpen) && (
-              <div className="animate-fade-up">
-                <div className="text-sm font-bold text-white tracking-wide">BankSentinel</div>
-                <div className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">SOC Dashboard</div>
+              <div className="min-w-0">
+                <div className="text-sm text-text-primary font-medium truncate">Kshitiz Khanal</div>
+                <div className="text-[10px] text-text-muted uppercase tracking-wider">Admin</div>
               </div>
             )}
           </div>
-          {/* Mobile Close Button */}
-          <button 
-            className="md:hidden p-2 hover:bg-background-elevated rounded-lg"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            <X size={18} className="text-text-muted" />
-          </button>
         </div>
-
-        {/* Monitoring Section */}
-        {(!sidebarCollapsed || mobileMenuOpen) && (
-          <div className="text-[10px] text-text-muted uppercase tracking-[0.15em] px-3 pt-4 pb-1 font-semibold">
-            Monitoring
-          </div>
-        )}
-        <div onClick={handleLinkClick}><NavItem to="/dashboard" label="Dashboard" challenge="C3" icon={<LayoutDashboard size={16} />} collapsed={sidebarCollapsed} /></div>
-        <div onClick={handleLinkClick}><NavItem to="/alerts" label="Live Alerts" challenge="C3" icon={<AlertTriangle size={16} />} collapsed={sidebarCollapsed} /></div>
-
-        {/* Analysis Section */}
-        {(!sidebarCollapsed || mobileMenuOpen) && (
-          <div className="text-[10px] text-text-muted uppercase tracking-[0.15em] px-3 pt-5 pb-1 font-semibold">
-            Analysis
-          </div>
-        )}
-        <div onClick={handleLinkClick}><NavItem to="/intel" label="Threat Intel" challenge="C4" icon={<Globe size={16} />} collapsed={sidebarCollapsed} /></div>
-        <div onClick={handleLinkClick}><NavItem to="/redteam" label="Red Team" icon={<Swords size={16} />} collapsed={sidebarCollapsed} /></div>
-        <div onClick={handleLinkClick}><NavItem to="/soc" label="SOC Assistant" challenge="C3" icon={<MessageSquare size={16} />} collapsed={sidebarCollapsed} /></div>
-
-        {/* Operations Section */}
-        {(!sidebarCollapsed || mobileMenuOpen) && (
-          <div className="text-[10px] text-text-muted uppercase tracking-[0.15em] px-3 pt-5 pb-1 font-semibold">
-            Operations
-          </div>
-        )}
-        <div onClick={handleLinkClick}>
-          <NavItem
-            to="/audit" label="Audit Chain" challenge="C2" icon={<Lock size={16} />}
-            disabled={!hasRole('COMPLIANCE_OFFICER') && !hasRole('ADMIN')} collapsed={sidebarCollapsed}
-          />
-        </div>
-        <div onClick={handleLinkClick}>
-          <NavItem
-            to="/settings" label="Settings" icon={<Settings size={16} />}
-            disabled={!hasRole('ADMIN')} collapsed={sidebarCollapsed}
-          />
-        </div>
-      </div>
-
-      {/* Bottom section */}
-      <div className="space-y-3">
-        {/* Agent Status indicator */}
-        {(!sidebarCollapsed || mobileMenuOpen) && (
-          <div className="glass-panel p-3 space-y-2 hidden md:block">
-            <div className="flex items-center gap-2">
-              <Activity size={12} className="text-challenge-c3" />
-              <span className="text-[10px] text-text-secondary uppercase tracking-wider font-semibold">System Status</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="status-dot-online" />
-              <span className="text-xs text-text-secondary">5 agents online</span>
-            </div>
-          </div>
-        )}
-
-        {/* Collapse toggle */}
-        <button
-          onClick={toggleSidebar}
-          className="w-full hidden md:flex items-center justify-center p-2 rounded-lg hover:bg-background-elevated transition-colors text-text-muted hover:text-text-primary"
-        >
-          {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-        </button>
-
-        {/* User */}
-        <div className="flex items-center gap-3 px-2 py-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-challenge-c1 to-challenge-c4 flex items-center justify-center flex-shrink-0 ring-2 ring-background-border">
-            <span className="text-xs font-bold text-white">AK</span>
-          </div>
-          {(!sidebarCollapsed || mobileMenuOpen) && (
-            <div className="min-w-0">
-              <div className="text-sm text-text-primary font-medium truncate">Ankit Kumar</div>
-              <div className="text-[10px] text-text-muted uppercase tracking-wider">Admin</div>
-            </div>
-          )}
-        </div>
-      </div>
-    </aside>
+      </aside>
     </>
   );
 };

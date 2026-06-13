@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useAuthStore } from '@stores/auth.store';
 import { PERMISSIONS } from '@lib/constants';
-import type { Role } from '@types/auth.types';
+import type { Role } from '@/types/auth.types';
 
 export const usePermissions = () => {
   const user = useAuthStore((s) => s.user);

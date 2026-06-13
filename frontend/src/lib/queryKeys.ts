@@ -1,4 +1,4 @@
-import type { AlertFilters } from '@types/alert.types';
+import type { AlertFilters } from '@/types/alert.types';
 
 export const queryKeys = {
   alerts: {

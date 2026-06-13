@@ -1,5 +1,5 @@
-import { AlertSchema, AlertListSchema } from '@types/alert.types';
-import type { AlertFilters } from '@types/alert.types';
+import { AlertSchema, AlertListSchema } from '@/types/alert.types';
+import type { AlertFilters } from '@/types/alert.types';
 
 export const alertsService = {
   getAlerts: async (filters: AlertFilters) => {

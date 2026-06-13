@@ -1,5 +1,5 @@
 import { apiClient } from '@lib/axios';
-import { IntelFeedStatusSchema, IntelRefreshSchema } from '@types/intel.types';
+import { IntelFeedStatusSchema, IntelRefreshSchema } from '@/types/intel.types';
 
 export const intelService = {
   getFeeds: async () => {

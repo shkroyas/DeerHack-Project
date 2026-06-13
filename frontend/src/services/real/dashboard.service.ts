@@ -1,5 +1,5 @@
 import { apiClient } from '@lib/axios';
-import { DashboardGraphSchema, DashboardKpiSchema } from '@types/dashboard.types';
+import { DashboardGraphSchema, DashboardKpiSchema } from '@/types/dashboard.types';
 
 export const dashboardService = {
   getKpis: async () => {

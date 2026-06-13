@@ -1,5 +1,5 @@
 import { apiClient } from '@lib/axios';
-import { ActionResultSchema } from '@types/response.types';
+import { ActionResultSchema } from '@/types/response.types';
 
 /**
  * Response service — triggers automated containment via the backend's
@@ -34,7 +34,7 @@ export const responseService = {
   },
 
   // Convenience wrappers that call the same endpoint
-  quarantine: async (alertId: string) => {
+  quarantine: async (alertId: string, reason?: string) => {
     // For now, trigger a generic response since backend doesn't support per-action endpoints
     return responseService.executeResponse({
       recordId: parseInt(alertId.replace('ALERT-', '')) || 0,

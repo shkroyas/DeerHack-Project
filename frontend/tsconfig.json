@@ -21,7 +21,7 @@
       "@lib/*": ["src/lib/*"],
       "@services/*": ["src/services/*"],
       "@stores/*": ["src/stores/*"],
-      "@types/*": ["src/types/*"]
+      "@/types/*": ["src/types/*"]
     }
   },
   "include": ["src"],

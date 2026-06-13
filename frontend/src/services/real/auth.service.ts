@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UserSchema } from '@types/auth.types';
+import { UserSchema } from '@/types/auth.types';
 import { apiClient } from '@lib/axios';
 
 const LoginSchema = z.object({ accessToken: z.string(), user: UserSchema });

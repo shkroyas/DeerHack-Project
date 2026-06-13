@@ -6,22 +6,28 @@ const config: Config = {
     extend: {
       colors: {
         background: {
-          primary: '#06080f',
-          secondary: '#0c0e17',
-          panel: '#111422',
-          elevated: '#181c2e',
-          border: '#1f2337'
+          primary: '#011126',
+          secondary: '#011640',
+          panel: '#011C40',
+          elevated: '#012052',
+          border: '#0a3060',
+          darker: '#010d1e',
         },
         text: {
-          primary: '#E8EAF6',
-          secondary: '#9BA4C4',
-          muted: '#5C6480'
+          primary: '#E8F4F8',
+          secondary: '#8BB8CC',
+          muted: '#4A7A8F'
+        },
+        accent: {
+          DEFAULT: '#11D9C5',
+          teal: '#027373',
+          glow: '#11D9C5',
         },
         challenge: {
-          c1: '#14B8A6',
+          c1: '#11D9C5',
           c2: '#F59E0B',
           c3: '#8B5CF6',
-          c4: '#3B82F6'
+          c4: '#027373'
         },
         severity: {
           critical: '#EF4444',
@@ -31,10 +37,10 @@ const config: Config = {
           info: '#6B7280'
         },
         state: {
-          safe: '#374151',
+          safe: '#0a3060',
           suspicious: '#B45309',
           compromised: '#991B1B',
-          isolated: '#1E293B'
+          isolated: '#011C40'
         }
       },
       fontFamily: {
@@ -55,15 +61,16 @@ const config: Config = {
         xs: '2px',
       },
       boxShadow: {
-        'glow-blue': '0 0 20px rgba(59, 130, 246, 0.15)',
+        'glow-teal': '0 0 20px rgba(17, 217, 197, 0.15)',
+        'glow-accent': '0 0 20px rgba(2, 115, 115, 0.2)',
         'glow-purple': '0 0 20px rgba(139, 92, 246, 0.15)',
-        'glow-teal': '0 0 20px rgba(20, 184, 166, 0.15)',
         'glow-amber': '0 0 20px rgba(245, 158, 11, 0.15)',
         'glow-red': '0 0 20px rgba(239, 68, 68, 0.2)',
+        'glow-cyan': '0 0 30px rgba(17, 217, 197, 0.25)',
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(ellipse at center, var(--tw-gradient-stops))',
-        'grid-pattern': 'linear-gradient(rgba(31,35,55,0.3) 1px, transparent 1px), linear-gradient(to right, rgba(31,35,55,0.3) 1px, transparent 1px)',
+        'grid-pattern': 'linear-gradient(rgba(10,48,96,0.3) 1px, transparent 1px), linear-gradient(to right, rgba(10,48,96,0.3) 1px, transparent 1px)',
       },
       backgroundSize: {
         'grid': '40px 40px',
