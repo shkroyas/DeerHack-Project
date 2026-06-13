@@ -182,62 +182,57 @@ def dashboard_graph(reg: AgentRegistry = Depends(get_registry)):
     C2 Server (external), AD Server, RTGS Gateway.
     """
     nodes = [
-        GraphNode(
-            id="swift-gw", label="SWIFT Gateway", type="SWIFT_GATEWAY",
-            ip=NETWORK_SEGMENTS["swift_subnet"].replace("0/24", "1"), state="safe", challenge="C4",
-        ),
-        GraphNode(
-            id="pumori-db", label="Pumori Core DB", type="CORE_BANKING_DB",
-            ip=NETWORK_SEGMENTS["core_banking"].replace("0/24", "10"), state="safe", challenge="C1",
-        ),
-        GraphNode(
-            id="atm-switch", label="ATM Switch", type="ATM_SWITCH",
-            ip=NETWORK_SEGMENTS["atm_switch"].replace("0/24", "1"), state="safe", challenge="C2",
-        ),
-        GraphNode(
-            id="workstation-1", label="Workstation-1", type="WORKSTATION",
-            ip=NETWORK_SEGMENTS["swift_subnet"].replace("0/24", "45"), state="safe",
-        ),
-        GraphNode(
-            id="c2-server", label="C2 Server", type="C2_SERVER",
-            ip="185.220.101.32", state="safe", challenge="C4",
-        ),
-        GraphNode(
-            id="ad-server", label="AD Server", type="AD_SERVER",
-            ip=NETWORK_SEGMENTS["corporate_lan"].replace("0/24", "1"), state="safe",
-        ),
-        GraphNode(
-            id="rtgs-gw", label="RTGS Gateway", type="RTGS_GATEWAY",
-            ip=NETWORK_SEGMENTS["nrb_regulatory"].replace("0/24", "1"), state="safe", challenge="C2",
-        ),
+        GraphNode(id="parrot-attacker", label="Parrot OS", type="ATTACKER", ip="192.168.101.231", state="safe", challenge="C1"),
+        GraphNode(id="windows-host", label="Windows Server", type="WINDOWS_HOST", ip="192.168.102.8", state="safe", challenge="C3"),
+        GraphNode(id="packet-agent", label="Packet Agent", type="AGENT", ip="internal", state="safe", challenge="C1"),
+        GraphNode(id="flow-agent", label="Flow Agent", type="AGENT", ip="internal", state="safe", challenge="C2"),
+        GraphNode(id="behavior-agent", label="Behavior Agent", type="AGENT", ip="internal", state="safe", challenge="C1"),
+        GraphNode(id="threat-feed", label="Threat Intel Engine", type="AGENT", ip="external", state="safe", challenge="C4"),
+        GraphNode(id="correlation-agent", label="Correlation BBN", type="AGENT", ip="internal", state="safe", challenge="C3"),
+        GraphNode(id="response-agent", label="Response Firewall", type="AGENT", ip="internal", state="safe", challenge="C3"),
     ]
 
-    # Dynamic Node State update
+    # Dynamic Node State update based on recent attacks
     if reg.correlation_agent is not None:
         campaigns = reg.correlation_agent.suppression._campaigns
         now = time.time()
         for ip, ticket in campaigns.items():
             if (now - ticket.last_seen) < 300: # active in last 5 mins
+                # Mark attacker and host as compromised/suspicious
                 for n in nodes:
-                    if n.ip == ip:
+                    if n.id == "parrot-attacker":
                         n.state = "compromised" if len(ticket.alert_ids) > 3 else "suspicious"
+                        if ip != "192.168.101.231":
+                            n.label = f"Simulated Attacker ({ip})"
+                        else:
+                            n.label = "Parrot OS (Live Attack)"
+                    if n.ip == "192.168.102.8":
+                        n.state = "compromised" if len(ticket.alert_ids) > 3 else "suspicious"
+                
+                # Mark agents that fired for this active ticket
+                agents_fired = set(["packet-agent", "flow-agent", "behavior-agent"])
+                
+                for n in nodes:
+                    if n.id in agents_fired or n.id == "correlation-agent" or n.id == "response-agent":
+                        n.state = "suspicious"
     
-    # We also have specific IPs mapped in Red Team scenarios that aren't purely source
-    # E.g. C2 server is typically a destination
-    if any(n.state in ["suspicious", "compromised"] for n in nodes if n.ip == NETWORK_SEGMENTS["swift_subnet"].replace("0/24", "45")):
-        # If workstation is compromised, C2 is active
-        for n in nodes:
-            if n.ip == "185.220.101.32":
-                n.state = "suspicious"
-
     edges = [
-        GraphEdge(id="e1", source="workstation-1", target="swift-gw", type="internal", label="SWIFT Access"),
-        GraphEdge(id="e2", source="workstation-1", target="pumori-db", type="internal", label="DB Query"),
-        GraphEdge(id="e3", source="workstation-1", target="c2-server", type="c2-channel", label="TLS 1.3 C2"),
-        GraphEdge(id="e4", source="swift-gw", target="rtgs-gw", type="internal", label="RTGS Settlement"),
-        GraphEdge(id="e5", source="atm-switch", target="pumori-db", type="internal", label="ATM Recon"),
-        GraphEdge(id="e6", source="ad-server", target="workstation-1", type="internal", label="Auth"),
-        GraphEdge(id="e7", source="c2-server", target="workstation-1", type="c2-channel", label="C2 Callback"),
+        # Data Ingestion
+        GraphEdge(id="e1", source="parrot-attacker", target="windows-host", type="attack", label="Live Traffic"),
+        
+        # Windows to Agents
+        GraphEdge(id="e2", source="windows-host", target="packet-agent", type="internal", label="Raw Packets"),
+        GraphEdge(id="e3", source="windows-host", target="flow-agent", type="internal", label="NetFlows"),
+        GraphEdge(id="e4", source="windows-host", target="behavior-agent", type="internal", label="API/Auth Logs"),
+        
+        # Agents to Correlation
+        GraphEdge(id="e5", source="packet-agent", target="correlation-agent", type="internal", label="Confidence Score"),
+        GraphEdge(id="e6", source="flow-agent", target="correlation-agent", type="internal", label="Confidence Score"),
+        GraphEdge(id="e7", source="behavior-agent", target="correlation-agent", type="internal", label="Confidence Score"),
+        GraphEdge(id="e8", source="threat-feed", target="correlation-agent", type="internal", label="IOC Matches"),
+        
+        # Correlation to Response
+        GraphEdge(id="e9", source="correlation-agent", target="response-agent", type="internal", label="Mitigation Trigger"),
     ]
 
     return NetworkGraph(nodes=nodes, edges=edges)
