@@ -25,6 +25,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 from agents.correlation_agent import CorrelationResult
+from agents.notification_agent import NotificationAgent
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,7 @@ class ResponseAgent:
         self.db_path = db_path
         self.prev_hash = "0" * 64
         self._init_db()
+        self.notifier = NotificationAgent()
 
     def _init_db(self):
         """Initialize the SQLite database with the audit_log table."""
@@ -83,7 +85,13 @@ class ResponseAgent:
             pdf_path = self._generate_nrb_report(alert)
             actions_taken.append(f"PDF_REPORT ({pdf_path.name})")
             
-            # 5. Immutable Audit Log
+            # 5. Dispatch Alert to SOC (Discord/Webhook)
+            stix_path = FORENSICS_DIR / f"STIX_{alert.campaign_ticket_id or 'ALERT'}.json"
+            notified = self.notifier.send_alert(alert, pdf_path, stix_path)
+            if notified:
+                actions_taken.append("SOC_NOTIFIED")
+
+            # 6. Immutable Audit Log
             self._log_immutable('CONTAINMENT_EXECUTED', alert.timestamp.isoformat())
         else:
             # For lower priorities or suppressed alerts, just log the evaluation

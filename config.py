@@ -30,6 +30,10 @@ for d in [DATA_DIR, MODELS_DIR, FORENSICS_DIR, LOGS_DIR]:
 # ── Secrets ───────────────────────────────────────────────────────────────────
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 _keys_env = os.getenv("GEMINI_API_KEYS", "")
+ELASTIC_USER = os.getenv("ELASTIC_USER", "elastic")
+ELASTIC_PASS = os.getenv("ELASTIC_PASS", "changeme")
+
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1515416618488954930/2fAzIKn6Lq2wwKImmPZva3Fc8SR3aAk1lI8XQwCbxznLRltJFMJj_F7D_w7fdhyI8nF0"
 GEMINI_API_KEYS = [k.strip() for k in _keys_env.split(",")] if _keys_env else ([GEMINI_API_KEY] if GEMINI_API_KEY else [])
 OTX_API_KEY    = os.getenv("OTX_API_KEY", "")
 

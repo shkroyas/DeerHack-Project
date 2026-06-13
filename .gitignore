@@ -8,6 +8,13 @@ venv/
 .venv/
 env/
 ENV/
+.myvenv/
+agents/__pycache__/
+__pycache__/
+intel/__pycache__/
+pipeline/__pycache__/
+
+
 
 # Data and Models
 # We ignore these directories because they contain large datasets (like CICIDS-2018 or CTU-13) 

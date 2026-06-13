@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AgentHealthPanel } from '@components/feature/AgentHealthPanel';
-import { AttackGraph } from '@components/feature/AttackGraph';
+import { ModelPipeline } from '@components/feature/ModelPipeline';
 import { AlertFeed } from '@components/feature/AlertFeed';
 import { EncryptedTrafficPanel } from '@components/feature/EncryptedTrafficPanel';
 import { RegimeContextBadge } from '@components/feature/RegimeContextBadge';
@@ -38,9 +38,9 @@ const DashboardPage: React.FC = () => {
           <div className="glass-panel p-4 overflow-x-auto">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-white">Network Threat Topology</h2>
-              <span className="challenge-badge challenge-badge-c1">C1</span>
+              <span className="challenge-badge challenge-badge-c1">Pipeline</span>
             </div>
-            <AttackGraph />
+            <ModelPipeline />
           </div>
 
           <div className="glass-panel p-4">
