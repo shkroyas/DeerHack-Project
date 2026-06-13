@@ -12,6 +12,7 @@ Usage:
   Windows: python sensor.py  (run as Administrator)
 """
 
+
 import os
 import sys
 import csv
@@ -264,6 +265,44 @@ def tail_csv_and_forward(csv_path):
                 time.sleep(1)
 
 
+# ── Dummy Listeners ───────────────────────────────────────────────────────────
+def _handle_dummy(conn):
+    try:
+        conn.recv(2048)
+    except:
+        pass
+    finally:
+        try:
+            conn.close()
+        except:
+            pass
+
+def dummy_listener(port, is_udp=False):
+    try:
+        if is_udp:
+            import socket
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.bind(('0.0.0.0', port))
+            while True:
+                s.recvfrom(2048)
+        else:
+            import socket
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.bind(('0.0.0.0', port))
+            s.listen(5)
+            while True:
+                conn, addr = s.accept()
+                threading.Thread(target=_handle_dummy, args=(conn,), daemon=True).start()
+    except Exception:
+        pass
+
+def start_dummy_listeners():
+    ports = [80, 443, 445, 1433, 1521, 3306, 3389, 5432, 5900, 8080, 8443, 9200]
+    for p in ports:
+        threading.Thread(target=dummy_listener, args=(p,), daemon=True).start()
+    threading.Thread(target=dummy_listener, args=(8583, True), daemon=True).start()
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
@@ -288,6 +327,10 @@ def main():
     csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "flows.csv")
     if not os.path.exists(csv_path):
         open(csv_path, "w").close()
+
+    #0. start dummy listeners so connection complete
+    start_dummy_listeners()
+    logging.info("started dummy listeners on target ports.")
 
     # 1. Start JA3 Sniffer
     scapy_thread = threading.Thread(target=run_scapy_sniffer, args=(interface,), daemon=True)

@@ -174,6 +174,8 @@ def _run_pipeline_on_record(record, reg: AgentRegistry) -> PipelineResponse:
             # ── Simulator background traffic ────────────────────
             "ANOMALY":        (0.35, "LOW",      "T1046"),
             "BENIGN":         (0.15, "INFO",     "Normal Traffic"),
+            # ── Live sensor traffic (real attacks from attacker) ──
+            "LIVE":           (0.85, "HIGH",     "T1595 - Active Scanning"),
         }
 
         if record.label in LABEL_MAP:
@@ -186,6 +188,7 @@ def _run_pipeline_on_record(record, reg: AgentRegistry) -> PipelineResponse:
                 "ATM-MitM", "ATM-Exfil",
                 "Insider-Access", "Insider-Query", "Insider-Exfil",
                 "Ransom-Init", "Ransom-Encrypt",
+                "LIVE",
             }
             
             # FPR tracking: count all benign/anomaly records that enter the pipeline
@@ -246,11 +249,34 @@ def _run_pipeline_on_record(record, reg: AgentRegistry) -> PipelineResponse:
             )
         result.mitre_technique = corr_resp.mitre_technique
 
+        # Determine challenge from agents or label
+        _challenge = "C1"  # Default: zero-day/behavioral
+        if record.label == "LIVE":
+            # Live sensor traffic — determine challenge by what agents fired
+            fired = set(corr_resp.agents_fired)
+            if "PacketAgent" in fired:
+                _challenge = "C4"
+            elif "FlowAgent" in fired:
+                _challenge = "C2"
+            elif "CorrelationAgent" in fired:
+                _challenge = "C3"
+            else:
+                _challenge = "C1"
+        elif record.label.startswith("APT"):
+            _challenge = "C4"
+        elif record.label.startswith("ATM"):
+            _challenge = "C2"
+        elif record.label.startswith("Ransom"):
+            _challenge = "C3"
+        elif record.label.startswith("Insider"):
+            _challenge = "C1"
+
         # Broadcast to WebSocket if CRS > 0
         if result.crs > 0:
             import asyncio
             from api.routes.websocket import broadcast_alert
             alert_data = corr_resp.model_dump(mode="json")
+            alert_data["challenge"] = _challenge  # Inject challenge for frontend
             try:
                 loop = asyncio.get_running_loop()
                 loop.create_task(broadcast_alert(alert_data))

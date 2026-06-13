@@ -94,49 +94,64 @@ const RedTeamPage: React.FC = () => {
 
   if (!loadedScenarios && mode === 'simulated') loadScenarios();
 
+  // Track how many alerts we've already processed to detect genuinely new ones
+  const lastSeenCount = React.useRef(0);
+  const listenStartTime = React.useRef<number>(0);
+
+  // Reset counter when we start listening for a new scenario
+  React.useEffect(() => {
+    if (listeningScenario) {
+      lastSeenCount.current = allAlerts.length;
+      listenStartTime.current = Date.now();
+    }
+  }, [listeningScenario]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Handle live alert mapping
   React.useEffect(() => {
-    if (mode === 'live' && listeningScenario && allAlerts.length > 0) {
-      // We take the most recent alerts as the live stream comes in
-      const newAlerts = allAlerts.slice(0, 10); // Look at recent alerts
-      if (newAlerts.length > 0) {
-        setActiveResult(prev => {
-          const currentStages = prev?.stages || [];
-          
-          // Map new alerts to stages
-          const incomingStages = newAlerts.map((a, i) => ({
-            stage_index: currentStages.length + i,
-            timestamp_offset_sec: 0,
-            challenge: a.challenge || listeningScenario.challenge,
-            agent: a.agents?.join(', ') || 'Sensor',
-            event: `Detected ${a.severity} activity: ${a.sourceIp} -> ${a.destinationIp}`,
-            detection: `CRS Score: ${a.crs}`,
-            confidence: a.crs,
-            latency_ms: Math.random() * 50 + 10,
-          }));
+    if (mode !== 'live' || !listeningScenario) return;
+    if (allAlerts.length <= lastSeenCount.current) return; // No new alerts
 
-          // Avoid infinite loops by only updating if we have genuinely new alerts
-          // Simple heuristic: check if the first incoming alert is already the last stage
-          if (currentStages.length > 0 && incomingStages.length > 0 && currentStages[0]?.event === incomingStages[0]?.event) {
-              return prev;
-          }
+    // Only alerts that arrived AFTER we clicked "Listen"
+    const newCount = allAlerts.length - lastSeenCount.current;
+    const newAlerts = allAlerts.slice(0, newCount);
+    lastSeenCount.current = allAlerts.length;
 
-          return {
-            scenario_id: listeningScenario.id,
-            scenario_name: listeningScenario.name,
-            challenge: listeningScenario.challenge,
-            description: listeningScenario.description,
-            stages: incomingStages.slice(0, 5), // Keep it concise for live view
-            total_detection_time_sec: prev ? prev.total_detection_time_sec + 1.2 : 0.5,
-            alerts_generated: (prev?.alerts_generated || 0) + newAlerts.length,
-            alerts_after_suppression: (prev?.alerts_after_suppression || 0) + 1,
-            campaign_ticket_id: newAlerts[0]?.mitre || null,
-            success: true
-          };
-        });
-      }
-    }
-  }, [allAlerts, mode, listeningScenario]);
+    if (newAlerts.length === 0) return;
+
+    const elapsedSec = (Date.now() - listenStartTime.current) / 1000;
+
+    setActiveResult(prev => {
+      const prevStages = prev?.stages || [];
+      
+      // Map new alerts to stage events
+      const newStages = newAlerts.map((a, i) => ({
+        stage_index: prevStages.length + i,
+        timestamp_offset_sec: Math.round(elapsedSec),
+        challenge: a.challenge || listeningScenario.challenge,
+        agent: a.agents?.join(', ') || 'Sensor',
+        event: `Detected ${a.severity} activity: ${a.sourceIp} → ${a.destinationIp}`,
+        detection: `CRS: ${a.crs?.toFixed(3)} | ${a.mitre || 'Unknown'}`,
+        confidence: a.crs,
+        latency_ms: Math.random() * 50 + 10,
+      }));
+
+      // Merge: keep all previous stages + new ones (cap at 20 for readability)
+      const allStages = [...newStages, ...prevStages].slice(0, 20);
+
+      return {
+        scenario_id: listeningScenario.id,
+        scenario_name: listeningScenario.name,
+        challenge: listeningScenario.challenge,
+        description: listeningScenario.description,
+        stages: allStages,
+        total_detection_time_sec: elapsedSec,
+        alerts_generated: (prev?.alerts_generated || 0) + newAlerts.length,
+        alerts_after_suppression: (prev?.alerts_after_suppression || 0) + newAlerts.length,
+        campaign_ticket_id: newAlerts[0]?.mitre || prev?.campaign_ticket_id || null,
+        success: true
+      };
+    });
+  }, [allAlerts.length, mode, listeningScenario]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const runScenario = async (scenario: ScenarioInfo) => {
     if (mode === 'live') {

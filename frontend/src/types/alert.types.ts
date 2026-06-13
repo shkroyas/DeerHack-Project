@@ -5,7 +5,7 @@ export const AlertSchema = z.object({
   timestamp: z.string(),
   sourceIp: z.string(),
   destinationIp: z.string().optional(),
-  severity: z.enum(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'QUEUED']),
+  severity: z.enum(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO', 'QUEUED']),
   mitre: z.string().optional(),
   agents: z.array(z.string()),
   crs: z.number(),
