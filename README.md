@@ -76,6 +76,20 @@ Navigate to `http://localhost:5173` to access the SOC Dashboard.
 
 ---
 
+##  Demo
+
+Here is a view of the finished BankSentinel product in action:
+
+### SOC Dashboard Overview
+![SOC Dashboard](./output-1.png)
+*Real-time alert stream and multi-agent pipeline monitoring dashboard, showing active threat telemetry and Composite Risk Score (CRS).*
+
+### Threat Analysis & AI Assistant
+![AI Assistant & Analysis](./output-3.png)
+*Detailed threat analysis, alert fusion demonstration, and natural language interactions via the integrated SOC Assistant.*
+
+---
+
 ##  Repository Notes
 
 Please note that the following directories are intentionally excluded from version control to keep the repository lightweight:
