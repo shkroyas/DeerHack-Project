@@ -1,5 +1,5 @@
 import create from 'zustand';
-import { AgentStatus } from '@types/agent.types';
+import { AgentStatus } from '@/types/agent.types';
 
 interface AgentHealthState {
   agents: Record<string, AgentStatus>;

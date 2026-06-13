@@ -1,5 +1,5 @@
 import { apiClient } from '@lib/axios';
-import { AgentStatusSchema } from '@types/agent.types';
+import { AgentStatusSchema } from '@/types/agent.types';
 
 export const agentsService = {
   getHealth: async () => {

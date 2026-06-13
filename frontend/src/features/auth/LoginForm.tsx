@@ -31,19 +31,19 @@ export const LoginForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div className="space-y-1">
-        <label htmlFor="email" className="block text-xs font-medium text-slate-400 ml-1">
+        <label htmlFor="email" className="block text-xs font-medium text-[#8BB8CC] ml-1">
           Email Address
         </label>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Mail size={16} className="text-slate-500" />
+            <Mail size={16} className="text-[#4A7A8F]" />
           </div>
           <input 
             id="email" 
             type="email" 
             placeholder="analyst@banksentinel.ai"
             {...register('email')} 
-            className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-transparent transition-all" 
+            className="w-full pl-10 pr-4 py-2.5 bg-[#011126]/60 border border-[#0a3060] rounded-lg text-white placeholder:text-[#4A7A8F] focus:outline-none focus:ring-2 focus:ring-[#11D9C5]/50 focus:border-transparent transition-all" 
           />
         </div>
         {errors.email && (
@@ -52,19 +52,19 @@ export const LoginForm: React.FC = () => {
       </div>
 
       <div className="space-y-1">
-        <label htmlFor="password" className="block text-xs font-medium text-slate-400 ml-1">
+        <label htmlFor="password" className="block text-xs font-medium text-[#8BB8CC] ml-1">
           Password
         </label>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Lock size={16} className="text-slate-500" />
+            <Lock size={16} className="text-[#4A7A8F]" />
           </div>
           <input 
             id="password" 
             type="password" 
             placeholder="••••••••"
             {...register('password')} 
-            className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-transparent transition-all" 
+            className="w-full pl-10 pr-4 py-2.5 bg-[#011126]/60 border border-[#0a3060] rounded-lg text-white placeholder:text-[#4A7A8F] focus:outline-none focus:ring-2 focus:ring-[#11D9C5]/50 focus:border-transparent transition-all" 
           />
         </div>
         {errors.password && (
@@ -75,7 +75,7 @@ export const LoginForm: React.FC = () => {
       <button 
         type="submit" 
         disabled={isLoading}
-        className="w-full flex items-center justify-center gap-2 py-2.5 mt-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-lg font-medium shadow-lg shadow-emerald-500/25 transition-all disabled:opacity-70 disabled:cursor-not-allowed group"
+        className="w-full flex items-center justify-center gap-2 py-2.5 mt-2 bg-gradient-to-r from-[#027373] to-[#11D9C5] text-white rounded-lg font-semibold shadow-lg shadow-[#11D9C5]/10 border border-[#11D9C5]/30 hover:border-[#11D9C5]/60 hover:shadow-[0_0_20px_rgba(17,217,197,0.45),0_0_40px_rgba(2,115,115,0.25)] hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed group"
       >
         {isLoading ? (
           <Loader2 size={18} className="animate-spin" />

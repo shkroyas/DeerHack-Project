@@ -29,7 +29,7 @@ export const MITRETag: React.FC<Props> = ({ technique, severity }) => {
   const cleanTechnique = getMitre(technique, severity);
   
   return (
-    <span className="px-2 py-0.5 rounded bg-purple-500/20 border border-purple-500/30 text-[10px] text-purple-300 font-mono truncate max-w-[200px] inline-block align-middle">
+    <span className="px-2 py-0.5 rounded bg-[#027373]/20 border border-[#027373]/30 text-[10px] text-[#11D9C5] font-mono truncate max-w-[200px] inline-block align-middle">
       {cleanTechnique}
     </span>
   );

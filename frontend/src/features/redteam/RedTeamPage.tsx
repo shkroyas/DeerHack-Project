@@ -43,10 +43,10 @@ const CHALLENGE_ICONS: Record<string, React.ReactNode> = {
 };
 
 const CHALLENGE_COLORS: Record<string, { bg: string; border: string; text: string; badge: string; glow: string }> = {
-  C1: { bg: 'rgba(20,184,166,0.05)', border: 'rgba(20,184,166,0.2)', text: 'text-challenge-c1', badge: 'challenge-badge-c1', glow: 'glow-c1' },
+  C1: { bg: 'rgba(17,217,197,0.05)', border: 'rgba(17,217,197,0.2)', text: 'text-challenge-c1', badge: 'challenge-badge-c1', glow: 'glow-c1' },
   C2: { bg: 'rgba(245,158,11,0.05)', border: 'rgba(245,158,11,0.2)', text: 'text-challenge-c2', badge: 'challenge-badge-c2', glow: 'glow-c2' },
   C3: { bg: 'rgba(139,92,246,0.05)', border: 'rgba(139,92,246,0.2)', text: 'text-challenge-c3', badge: 'challenge-badge-c3', glow: 'glow-c3' },
-  C4: { bg: 'rgba(59,130,246,0.05)', border: 'rgba(59,130,246,0.2)', text: 'text-challenge-c4', badge: 'challenge-badge-c4', glow: 'glow-c4' },
+  C4: { bg: 'rgba(2,115,115,0.05)', border: 'rgba(2,115,115,0.2)', text: 'text-challenge-c4', badge: 'challenge-badge-c4', glow: 'glow-c4' },
 };
 
 const LIVE_SCENARIOS: ScenarioInfo[] = [
@@ -192,7 +192,7 @@ const RedTeamPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-bold text-white flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#027373] to-[#11D9C5] flex items-center justify-center">
               <Swords size={16} className="text-white" />
             </div>
             Red Team Mode
@@ -213,7 +213,7 @@ const RedTeamPage: React.FC = () => {
           >
             <div className={`absolute top-[2px] left-[2px] w-3 h-3 rounded-full bg-white transition-all duration-300 ${mode === 'simulated' ? 'translate-x-4' : ''}`} />
           </div>
-          <span className={`text-xs uppercase font-bold tracking-widest cursor-pointer ${mode === 'simulated' ? 'text-blue-400' : 'text-text-muted'}`} onClick={() => { setMode('simulated'); setListeningScenario(null); setActiveResult(null); }}>Simulated</span>
+          <span className={`text-xs uppercase font-bold tracking-widest cursor-pointer ${mode === 'simulated' ? 'text-[#11D9C5]' : 'text-text-muted'}`} onClick={() => { setMode('simulated'); setListeningScenario(null); setActiveResult(null); }}>Simulated</span>
         </div>
       </div>
 

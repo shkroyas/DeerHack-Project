@@ -65,7 +65,7 @@ SCENARIOS = {
     "swift_c2": {
         "challenge": "C4",
         "name": "SWIFT C2 Beaconing",
-        "description": "Cobalt Strike C2 from SWIFT subnet workstation — 3-layer TLS detection, no payload decryption",
+        "description": "Cobalt Strike C2 from SWIFT subnet workstation, 3-layer TLS detection, no payload decryption",
         "expected_time": "38s",
         "stages": [
             "Compromise endpoint via spearphish",
@@ -76,7 +76,7 @@ SCENARIOS = {
     "atm_harvest": {
         "challenge": "C2",
         "name": "ATM PIN Harvesting",
-        "description": "Attack during 01:00 ATM reconciliation — context model distinguishes attack from normal recon",
+        "description": "Attack during 01:00 ATM reconciliation, context model distinguishes attack from normal recon",
         "expected_time": "52s",
         "stages": [
             "ATM concentrator reconnaissance",
@@ -87,7 +87,7 @@ SCENARIOS = {
     "insider_exfil": {
         "challenge": "C1",
         "name": "Insider Zero-Day Exfiltration",
-        "description": "Novel exfiltration pattern with no known signature — BiLSTM fires on behavioral deviation",
+        "description": "Novel exfiltration pattern with no known signature, BiLSTM fires on behavioral deviation",
         "expected_time": "71s",
         "stages": [
             "Off-hours access to core banking DB",
@@ -98,7 +98,7 @@ SCENARIOS = {
     "ransomware_spread": {
         "challenge": "C3",
         "name": "Ransomware Lateral Movement",
-        "description": "412 individual host alerts collapsed to 1 campaign ticket — demonstrates alert fatigue reduction",
+        "description": "412 individual host alerts collapsed to 1 campaign ticket, demonstrates alert fatigue reduction",
         "expected_time": "44s",
         "stages": [
             "Initial endpoint compromise",
@@ -109,7 +109,7 @@ SCENARIOS = {
     "false_intrusion": {
         "challenge": "C2",
         "name": "False Intrusion (Benign Flood)",
-        "description": "Demonstrates C2 Context-Aware Suppression. High-volume traffic that mimics a flood attack is safely suppressed as operational noise.",
+        "description": "Demonstrates C2 Context Aware Suppression. High volume traffic that mimics a flood attack is safely suppressed as operational noise.",
         "expected_time": "10s",
         "stages": [
             "Massive UDP connection burst (Port 8583)",

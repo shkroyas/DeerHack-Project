@@ -2,9 +2,9 @@ import React from 'react';
 import { Shield, Lock, Radio, Timer } from 'lucide-react';
 
 const LAYERS = [
-  { id: 'l1', name: 'L1: JA3 Hash Match', icon: <Lock size={12} />, description: 'abuse.ch fingerprint feed', rate: '14,200+ hashes', color: 'from-blue-500 to-blue-400' },
-  { id: 'l2', name: 'L2: JA3S Cross-Signal', icon: <Radio size={12} />, description: 'Bidirectional TLS fingerprint', rate: 'Catches Cobalt Strike', color: 'from-purple-500 to-purple-400' },
-  { id: 'l3', name: 'L3: Beacon IAT Analysis', icon: <Timer size={12} />, description: 'Inter-arrival timing variance', rate: 'Zero-day C2 detection', color: 'from-teal-500 to-teal-400' },
+  { id: 'l1', name: 'L1: JA3 Hash Match', icon: <Lock size={12} />, description: 'abuse.ch fingerprint feed', rate: '14,200+ hashes', color: 'from-[#027373] to-[#11D9C5]' },
+  { id: 'l2', name: 'L2: JA3S Cross-Signal', icon: <Radio size={12} />, description: 'Bidirectional TLS fingerprint', rate: 'Catches Cobalt Strike', color: 'from-[#11D9C5] to-[#027373]' },
+  { id: 'l3', name: 'L3: Beacon IAT Analysis', icon: <Timer size={12} />, description: 'Inter-arrival timing variance', rate: 'Zero-day C2 detection', color: 'from-[#027373] to-[#11D9C5]' },
 ];
 
 export const EncryptedTrafficPanel: React.FC = () => (

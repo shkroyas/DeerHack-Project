@@ -1,5 +1,5 @@
 import React from 'react';
-import type { IntelFeedStatus } from '@types/intel.types';
+import type { IntelFeedStatus } from '@/types/intel.types';
 import { LiveIndicator } from '@components/common/LiveIndicator';
 
 interface Props {

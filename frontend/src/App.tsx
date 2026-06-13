@@ -16,7 +16,7 @@ const SOCAssistantPage = React.lazy(() => import('@features/soc/SOCAssistantPage
 
 const ErrorPage = () => (
   <div className="p-6">
-    <ErrorFallback error={new Error(STRINGS.ERRORS.SERVICE_UNAVAILABLE)} resetErrorBoundary={() => window.location.reload()} />
+    <ErrorFallback resetErrorBoundary={() => window.location.reload()} />
   </div>
 );
 
@@ -110,6 +110,6 @@ const router = createBrowserRouter([
   { path: '/unauthorized', element: <div>{STRINGS.ERRORS.INVALID_CREDENTIALS}</div> }
 ]);
 
-export default function App(): JSX.Element {
+export default function App() {
   return <RouterProvider router={router} />;
 }

@@ -36,7 +36,7 @@ const ThreatIntelPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-bold text-white flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#027373] to-[#11D9C5] flex items-center justify-center">
               <Globe size={16} className="text-white" />
             </div>
             Threat Intelligence & Federation
@@ -90,7 +90,7 @@ const ThreatIntelPage: React.FC = () => {
               <Server size={16} className="text-challenge-c1" /> Banking Federation Network
             </h2>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-green-400">CONNECTED</span>
+              <span className="text-[10px] font-mono text-[#11D9C5]">CONNECTED</span>
             </div>
           </div>
 

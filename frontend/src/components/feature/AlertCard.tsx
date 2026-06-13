@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Alert } from '@types/alert.types';
+import type { Alert } from '@/types/alert.types';
 import { SeverityIndicator } from '@components/common/SeverityIndicator';
 import { MITRETag } from '@components/common/MITRETag';
 import { ConfidenceBar } from '@components/common/ConfidenceBar';

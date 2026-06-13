@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { Alert } from '@types/alert.types';
+import type { Alert } from '@/types/alert.types';
 import { SeverityIndicator } from '@components/common/SeverityIndicator';
 import { CRSGauge } from '@components/common/CRSGauge';
 import { MITRETag } from '@components/common/MITRETag';
@@ -170,7 +170,7 @@ export const AlertDetailDrawer: React.FC<Props> = ({ alert, onClose }) => {
               disabled={alert.is_suppressed}
               className={`flex-1 py-3 font-semibold rounded-lg border transition-all flex items-center justify-center gap-2
                 ${alert.is_suppressed 
-                  ? 'bg-green-500/10 text-green-400 border-green-500/30 opacity-50 cursor-not-allowed' 
+                  ? 'bg-[#11D9C5]/10 text-[#11D9C5] border-[#11D9C5]/30 opacity-50 cursor-not-allowed' 
                   : 'bg-background-darker hover:bg-background-border text-text-primary border-background-border'}`}
             >
               <CheckCircle size={16} />

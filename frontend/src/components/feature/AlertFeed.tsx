@@ -30,7 +30,7 @@ const severityBorderColor: Record<string, string> = {
   CRITICAL: 'border-l-red-500 bg-red-500/5',
   HIGH:     'border-l-orange-500 bg-orange-500/5',
   MEDIUM:   'border-l-yellow-500 bg-yellow-500/5',
-  LOW:      'border-l-blue-500/40 bg-blue-500/5',
+  LOW:      'border-l-[#027373]/40 bg-[#027373]/5',
   INFO:     'border-l-slate-500/30',
 };
 
@@ -38,7 +38,7 @@ const priorityTextColor: Record<string, string> = {
   CRITICAL: 'text-red-400',
   HIGH:     'text-orange-400',
   MEDIUM:   'text-yellow-400',
-  LOW:      'text-blue-400',
+  LOW:      'text-[#11D9C5]',
   INFO:     'text-slate-400',
 };
 
@@ -120,14 +120,14 @@ export const AlertFeed: React.FC<{ initialAlerts?: unknown[] }> = ({ initialAler
         
         {/* Toggle Switch */}
         <div className="flex items-center gap-2 bg-background-elevated px-2 py-1 rounded-full border border-background-border/50">
-          <span className={`text-[10px] uppercase font-bold tracking-widest cursor-pointer ${feedMode === 'live' ? 'text-blue-400' : 'text-text-muted'}`} onClick={() => setFeedMode('live')}>Live</span>
+          <span className={`text-[10px] uppercase font-bold tracking-widest cursor-pointer ${feedMode === 'live' ? 'text-[#11D9C5]' : 'text-text-muted'}`} onClick={() => setFeedMode('live')}>Live</span>
           <div 
             className="w-6 h-3 bg-background-darker rounded-full relative cursor-pointer" 
             onClick={() => setFeedMode(prev => prev === 'live' ? 'simulated' : 'live')}
           >
             <div className={`absolute top-[2px] left-[2px] w-2 h-2 rounded-full bg-white transition-all duration-300 ${feedMode === 'simulated' ? 'translate-x-3' : ''}`} />
           </div>
-          <span className={`text-[10px] uppercase font-bold tracking-widest cursor-pointer ${feedMode === 'simulated' ? 'text-blue-400' : 'text-text-muted'}`} onClick={() => setFeedMode('simulated')}>Simulated</span>
+          <span className={`text-[10px] uppercase font-bold tracking-widest cursor-pointer ${feedMode === 'simulated' ? 'text-[#11D9C5]' : 'text-text-muted'}`} onClick={() => setFeedMode('simulated')}>Simulated</span>
         </div>
       </div>
 
@@ -162,7 +162,7 @@ export const AlertFeed: React.FC<{ initialAlerts?: unknown[] }> = ({ initialAler
                   <span className="text-[10px] text-text-muted font-mono">
                     CRS: {crs.toFixed(3)}
                   </span>
-                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#027373]/20 text-[#11D9C5] border border-[#027373]/30">
                     {mitre}
                   </span>
                 </div>

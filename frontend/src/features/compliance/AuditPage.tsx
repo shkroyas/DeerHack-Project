@@ -17,7 +17,7 @@ const AuditPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-bold text-white flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#027373] to-[#11D9C5] flex items-center justify-center">
               <Lock size={16} className="text-white" />
             </div>
             Immutable Audit Chain
@@ -43,10 +43,10 @@ const AuditPage: React.FC = () => {
         <div className="col-span-1 space-y-4">
           <div className="glass-panel p-5">
             <h2 className="text-sm font-semibold text-white mb-4">Chain Integrity Status</h2>
-            <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/20 mb-4">
-              <CheckCircle size={24} className="text-green-400" />
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-[#11D9C5]/10 border border-[#11D9C5]/20 mb-4">
+              <CheckCircle size={24} className="text-[#11D9C5]" />
               <div>
-                <div className="text-sm font-bold text-green-400">CRYPTOGRAPHICALLY VALID</div>
+                <div className="text-sm font-bold text-[#11D9C5]">CRYPTOGRAPHICALLY VALID</div>
                 <div className="text-[10px] text-text-muted">Last verified: just now</div>
               </div>
             </div>

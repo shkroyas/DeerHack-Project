@@ -22,17 +22,22 @@ const SOCAssistantPage: React.FC = () => {
     {
       id: '0',
       role: 'assistant',
-      content: '**Welcome to BankSentinel SOC AI.**\n\nI can explain any alert, cite specific NRB/SWIFT/PCI-DSS controls, and walk you through detection reasoning for all 4 challenges.\n\nTry one of the quick questions below, or ask your own.',
+      content: 'Welcome to BankSentinel SOC AI.\n\nI can explain any alert, cite specific NRB/SWIFT/PCI-DSS controls, and walk you through detection reasoning for all 4 challenges.\n\nTry one of the quick questions below, or ask your own.',
       timestamp: new Date(),
     },
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messageContainerRef.current) {
+      messageContainerRef.current.scrollTo({
+        top: messageContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   };
 
   useEffect(scrollToBottom, [messages]);
@@ -109,7 +114,7 @@ const SOCAssistantPage: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-background-border">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#027373] to-[#11D9C5] flex items-center justify-center">
               <Sparkles size={14} className="text-white" />
             </div>
             <div>
@@ -126,7 +131,7 @@ const SOCAssistantPage: React.FC = () => {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 min-h-0">
+        <div ref={messageContainerRef} className="flex-1 overflow-y-auto px-6 py-4 space-y-4 min-h-0">
           {messages.map((msg) => (
             <div
               key={msg.id}
@@ -172,7 +177,6 @@ const SOCAssistantPage: React.FC = () => {
               </div>
             </div>
           )}
-          <div ref={messagesEndRef} />
         </div>
 
         {/* Input */}

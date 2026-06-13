@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Alert } from '@types/alert.types';
+import type { Alert } from '@/types/alert.types';
 
 interface AlertStore {
   alerts: Alert[];

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAlertStore } from '@stores/alertStore';
-import type { Alert } from '@types/alert.types';
+import type { Alert } from '@/types/alert.types';
 import { AlertFilters } from './AlertFilters';
 import { AlertTable } from './AlertTable';
 import { AlertDetailDrawer } from './AlertDetailDrawer';
@@ -8,6 +8,7 @@ import { ShieldAlert, Activity } from 'lucide-react';
 
 const AlertsPage: React.FC = () => {
   const alerts = useAlertStore((state) => state.alerts);
+  const clearAlerts = useAlertStore((state) => state.clearAlerts);
   const [selected, setSelected] = useState<Alert | null>(null);
 
   const displayAlerts = alerts.slice(0, 100); // Increased slice to show more logs
@@ -20,7 +21,7 @@ const AlertsPage: React.FC = () => {
       <div className="mb-4 glass-panel p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-lg font-bold text-white flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#027373] to-[#11D9C5] flex items-center justify-center">
               <ShieldAlert size={16} className="text-white" />
             </div>
             Live Logs & Alerts
@@ -49,7 +50,7 @@ const AlertsPage: React.FC = () => {
 
       <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 flex-1 min-h-0">
         <div className="lg:col-span-1 glass-panel overflow-y-auto">
-          <AlertFilters count={alerts.length} onClear={() => null} />
+          <AlertFilters count={alerts.length} onClear={clearAlerts} />
         </div>
         <div className="lg:col-span-3 glass-panel flex flex-col min-h-0 overflow-hidden relative">
           <AlertTable alerts={displayAlerts} onAlertClick={(id) => setSelected(alerts.find((a) => a.id === id) ?? null)} />

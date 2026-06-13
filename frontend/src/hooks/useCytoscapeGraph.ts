@@ -35,7 +35,7 @@ export const useCytoscapeGraph = () => {
   const resetGraph = () => {
     const cy = cyRef.current;
     if (!cy) return;
-    cy.nodes().forEach((n) => n.data('state', 'safe'));
+    cy.nodes().forEach((n: any) => n.data('state', 'safe'));
   };
 
   const highlightBlastRadius = (nodeId: string) => {

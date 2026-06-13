@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useAgentHealthStore } from '@stores/agent-health.store';
 import { connectSocket } from '@lib/socket';
-import { AgentStatusSchema } from '@types/agent.types';
+import { AgentStatusSchema } from '@/types/agent.types';
 
 export const useAgentHealth = () => {
   const setAll = useAgentHealthStore((s) => s.setAllAgents);
