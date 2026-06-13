@@ -112,7 +112,7 @@ def dashboard_kpis(reg: AgentRegistry = Depends(get_registry)):
     suppressed = 0
     emitted = 0
     suppression_rate = 0.0
-    fpr = 2.4  # default from paper
+    fpr = 2.4 
 
     if reg.correlation_agent is not None:
         stats = reg.correlation_agent.get_stats()

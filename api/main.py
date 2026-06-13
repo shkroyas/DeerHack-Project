@@ -72,9 +72,20 @@ async def lifespan(app: FastAPI):
     # Start background traffic simulator
     start_simulator()
 
+    import asyncio
+    async def cleanup_loop():
+        while True:
+            await asyncio.sleep(3600)  # Run every hour
+            if registry.correlation_agent is not None:
+                cleared = registry.correlation_agent.cleanup_caches(3600.0)
+                logger.info(f"CorrelationAgent cache cleanup: {cleared} expired alerts removed.")
+
+    cleanup_task = asyncio.create_task(cleanup_loop())
+
     yield
 
     logger.info("BankSentinel API -- Shutting down ...")
+    cleanup_task.cancel()
     stop_simulator()
     shutdown_registry()
     logger.info("BankSentinel API -- Shutdown complete.")
@@ -101,7 +112,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

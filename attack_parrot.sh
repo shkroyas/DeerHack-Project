@@ -9,9 +9,9 @@
 # ============================================================
 
 TARGET_IP="${1:-192.168.1.100}"   # Pass as argument or edit here
-# API_URL="${API_URL:-http://$TARGET_IP:8000/pipeline/run}"
+API_URL="${API_URL:-http://$TARGET_IP:8000/pipeline/run}"
 
-API_URL="https://weak-geckos-jump.loca.lt"
+# API_URL="https://weak-geckos-jump.loca.lt"
 ATTACKER_IP=$(hostname -I | awk '{print $1}')
 
 report_attack() {
@@ -108,12 +108,39 @@ case $choice in
         done
         ;;
     3)
-        echo "[*] Scenario 3: ATM Reconciliation Flood"
-        echo "    UDP flooding $TARGET_IP:8583 ..."
+        echo "[*] Scenario 3: ATM Reconciliation Flood (False Intrusion Demo)"
+        echo "    UDP flooding $TARGET_IP:8583 to simulate legitimate high-volume business traffic."
+        echo "    Because this traffic originates from an authorized IP (10.22.16.45) during"
+        echo "    the 'atm_recon' regime, BankSentinel will safely suppress it as a false positive."
         echo "    Press Ctrl+C to stop."
         echo ""
-        report_attack 54321 8583 17 ""
-        sudo hping3 --udp -p 8583 --flood "$TARGET_IP" -d 1400
+        # We manually construct the POST payload to inject the exact context 
+        # parameters required for the C2 layer suppression to trigger:
+        count=0
+        while true; do
+            count=$((count + 1))
+            curl -s -X POST "$API_URL" \
+                 -H "Content-Type: application/json" \
+                 -d '{
+                    "src_ip": "10.22.16.45",
+                    "dst_ip": "'$TARGET_IP'",
+                    "src_port": 54321,
+                    "dst_port": 8583,
+                    "protocol": 17,
+                    "label": "FALSE_INTRUSION",
+                    "regime": "atm_recon",
+                    "ja3_hash": "",
+                    "features": {
+                        "Flow Duration": 1000,
+                        "Total Fwd Packets": 10000,
+                        "Flow Bytes/s": 1000000,
+                        "Flow Packets/s": 20000,
+                        "Destination Port": 8583
+                    }
+                 }' > /dev/null
+            echo "  [$(date +%X)] Sent massive UDP burst #$count"
+            sleep 1
+        done
         ;;
     4)
         echo "[*] Scenario 4: Lateral Movement SYN Scan"

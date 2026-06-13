@@ -56,7 +56,7 @@ _fpr_counters = {
 }
 
 
-def _run_pipeline_on_record(record, reg: AgentRegistry) -> PipelineResponse:
+def _run_pipeline_on_record(record, reg: AgentRegistry, loop=None) -> PipelineResponse:
     """
     Internal helper — run every available agent on a single FlowRecord
     and build the composite PipelineResponse.
@@ -192,10 +192,12 @@ def _run_pipeline_on_record(record, reg: AgentRegistry) -> PipelineResponse:
             "Ransom-RDP":     (0.78, "HIGH",     "T1021.001"),
             "Ransom-Encrypt": (0.96, "CRITICAL", "T1486"),
             # ── Simulator background traffic ────────────────────
-            "ANOMALY":        (0.35, "LOW",      "T1046"),
             "BENIGN":         (0.15, "INFO",     "Normal Traffic"),
-            # ── Live sensor traffic (real attacks from attacker) ──
+            "ANOMALY":        (0.35, "LOW",      "T1046"),
             "LIVE":           (0.85, "HIGH",     "T1595 - Active Scanning"),
+            "FALSE_INTRUSION":(0.85, "HIGH",     "T1499 - Endpoint DoS"),
+            "MALWARE":        (0.88, "CRITICAL", "T1105"),
+            "RANSOMWARE":     (0.96, "CRITICAL", "T1486 - Data Encrypted"),
         }
 
         if record.label in LABEL_MAP:
@@ -297,11 +299,14 @@ def _run_pipeline_on_record(record, reg: AgentRegistry) -> PipelineResponse:
             from api.routes.websocket import broadcast_alert
             alert_data = corr_resp.model_dump(mode="json")
             alert_data["challenge"] = _challenge  # Inject challenge for frontend
-            try:
-                loop = asyncio.get_running_loop()
-                loop.create_task(broadcast_alert(alert_data))
-            except RuntimeError:
-                pass # Not in an async context, gracefully ignore or handle
+            if loop and loop.is_running():
+                asyncio.run_coroutine_threadsafe(broadcast_alert(alert_data), loop)
+            else:
+                try:
+                    current_loop = asyncio.get_running_loop()
+                    current_loop.create_task(broadcast_alert(alert_data))
+                except RuntimeError:
+                    pass # Not in an async context, gracefully ignore or handle
 
         # ── Response Agent (only for CRITICAL, non-suppressed) ────────
         if (
@@ -342,8 +347,11 @@ async def pipeline_run(
 
     Returns detailed results from every agent that was available.
     """
+    import asyncio
+    from fastapi.concurrency import run_in_threadpool
+    loop = asyncio.get_running_loop()
     record = build_flow_record(req)
-    return _run_pipeline_on_record(record, reg)
+    return await run_in_threadpool(_run_pipeline_on_record, record, reg, loop)
 
 
 @router.post("/apt-demo", response_model=List[PipelineResponse])
@@ -364,6 +372,8 @@ async def pipeline_apt_demo(
     detailed analysis and the Correlation Agent's fused verdict.
     """
     from pipeline.ingestion import build_apt_scenario
+    import asyncio
+    from fastapi.concurrency import run_in_threadpool
 
     # Inject Cobalt Strike JA3 into the threat DB so the demo works
     # even if the live abuse.ch feed rotated it out
@@ -373,4 +383,10 @@ async def pipeline_apt_demo(
         ] = "CobaltStrike"
 
     apt_records = build_apt_scenario()
-    return [_run_pipeline_on_record(rec, reg) for rec in apt_records]
+    loop = asyncio.get_running_loop()
+    
+    responses = []
+    for rec in apt_records:
+        resp = await run_in_threadpool(_run_pipeline_on_record, rec, reg, loop)
+        responses.append(resp)
+    return responses
