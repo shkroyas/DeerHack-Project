@@ -22,7 +22,7 @@ export const AppShell: React.FC = () => {
         mitre: payload.campaign_ticket_id || "Unknown",
         agents: payload.agents_fired || [],
         crs: payload.crs || 0.0,
-        challenge: 'C3'
+        challenge: payload.challenge
       });
     }
   }, [addAlert]);

@@ -241,7 +241,7 @@ def tail_csv_and_forward(csv_path):
                         "dst_port": dst_port,
                         "protocol": protocol,
                         "features": features,
-                        "label": "BENIGN",  # Assume benign until proven anomaly
+                        "label": "LIVE",  # Assume benign until proven anomaly
                         "regime": "normal",
                         "ja3_hash": ja3_hash
                     }
