@@ -16,13 +16,15 @@ from typing import List, Optional
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
+from config import NETWORK_SEGMENTS
+
 router = APIRouter(prefix="/federation", tags=["Federation (Concept)"])
 
 
 # ── In-memory IOC store (stub) ────────────────────────────────────────────────
 _shared_iocs: List[dict] = [
     {
-        "ioc_hash": hashlib.sha256(b"10.22.14.45|APT-C2|2024").hexdigest(),
+        "ioc_hash": hashlib.sha256(f"{NETWORK_SEGMENTS['swift_subnet'].replace('0/24', '45')}|APT-C2|2024".encode()).hexdigest(),
         "ioc_type": "ip_hash",
         "contributing_bank": "NIC Asia (anonymized)",
         "shared_at": "2026-06-04T08:00:00Z",

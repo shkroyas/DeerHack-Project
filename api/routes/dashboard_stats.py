@@ -174,19 +174,19 @@ def dashboard_graph(reg: AgentRegistry = Depends(get_registry)):
     nodes = [
         GraphNode(
             id="swift-gw", label="SWIFT Gateway", type="SWIFT_GATEWAY",
-            ip="10.22.14.1", state="safe", challenge="C4",
+            ip=NETWORK_SEGMENTS["swift_subnet"].replace("0/24", "1"), state="safe", challenge="C4",
         ),
         GraphNode(
             id="pumori-db", label="Pumori Core DB", type="CORE_BANKING_DB",
-            ip="10.22.15.10", state="safe", challenge="C1",
+            ip=NETWORK_SEGMENTS["core_banking"].replace("0/24", "10"), state="safe", challenge="C1",
         ),
         GraphNode(
             id="atm-switch", label="ATM Switch", type="ATM_SWITCH",
-            ip="10.22.16.1", state="safe", challenge="C2",
+            ip=NETWORK_SEGMENTS["atm_switch"].replace("0/24", "1"), state="safe", challenge="C2",
         ),
         GraphNode(
             id="workstation-1", label="Workstation-1", type="WORKSTATION",
-            ip="10.22.14.45", state="safe",
+            ip=NETWORK_SEGMENTS["swift_subnet"].replace("0/24", "45"), state="safe",
         ),
         GraphNode(
             id="c2-server", label="C2 Server", type="C2_SERVER",
@@ -194,11 +194,11 @@ def dashboard_graph(reg: AgentRegistry = Depends(get_registry)):
         ),
         GraphNode(
             id="ad-server", label="AD Server", type="AD_SERVER",
-            ip="10.22.18.1", state="safe",
+            ip=NETWORK_SEGMENTS["corporate_lan"].replace("0/24", "1"), state="safe",
         ),
         GraphNode(
             id="rtgs-gw", label="RTGS Gateway", type="RTGS_GATEWAY",
-            ip="10.22.17.1", state="safe", challenge="C2",
+            ip=NETWORK_SEGMENTS["nrb_regulatory"].replace("0/24", "1"), state="safe", challenge="C2",
         ),
     ]
 
@@ -214,7 +214,7 @@ def dashboard_graph(reg: AgentRegistry = Depends(get_registry)):
     
     # We also have specific IPs mapped in Red Team scenarios that aren't purely source
     # E.g. C2 server is typically a destination
-    if any(n.state in ["suspicious", "compromised"] for n in nodes if n.ip == "10.22.14.45"):
+    if any(n.state in ["suspicious", "compromised"] for n in nodes if n.ip == NETWORK_SEGMENTS["swift_subnet"].replace("0/24", "45")):
         # If workstation is compromised, C2 is active
         for n in nodes:
             if n.ip == "185.220.101.32":

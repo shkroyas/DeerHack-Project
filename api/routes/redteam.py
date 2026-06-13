@@ -16,7 +16,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from api.dependencies import AgentRegistry, get_registry
-from config import FLOW_FEATURES
+from config import FLOW_FEATURES, NETWORK_SEGMENTS
 
 router = APIRouter(prefix="/redteam", tags=["Red Team"])
 
@@ -292,7 +292,7 @@ def _run_swift_c2(reg, rng):
     ticket = None
 
     # Stage 1: C2 TLS connection
-    rec = _make_record("10.22.14.45", "185.220.101.32", "off_hours", "APT-C2", rng, 49271, 443)
+    rec = _make_record(NETWORK_SEGMENTS["swift_subnet"].replace("0/24", "45"), "185.220.101.32", "off_hours", "APT-C2", rng, 49271, 443)
     rec.tls_version = 771
     rec.tls_ciphers = [49195, 49199, 52393, 52392, 49196, 49200]
     rec.tls_extensions = [0, 5, 10, 11, 13, 18, 23, 65281]
@@ -323,7 +323,7 @@ def _run_swift_c2(reg, rng):
     ))
 
     # Stage 2: Lateral movement
-    rec2 = _make_record("10.22.14.45", "10.22.14.1", "off_hours", "APT-Lateral", rng, 49272, 4711)
+    rec2 = _make_record(NETWORK_SEGMENTS["swift_subnet"].replace("0/24", "45"), NETWORK_SEGMENTS["swift_subnet"].replace("0/24", "1"), "off_hours", "APT-Lateral", rng, 49272, 4711)
     corr2, lat2 = _run_through_pipeline(rec2, reg)
     alerts += 1
     if corr2 and corr2.is_suppressed:
@@ -337,7 +337,7 @@ def _run_swift_c2(reg, rng):
     ))
 
     # Stage 3: DB query spike
-    rec3 = _make_record("10.22.15.10", "10.22.15.10", "off_hours", "APT-Collection", rng, 1521, 1521)
+    rec3 = _make_record(NETWORK_SEGMENTS["core_banking"].replace("0/24", "10"), NETWORK_SEGMENTS["core_banking"].replace("0/24", "10"), "off_hours", "APT-Collection", rng, 1521, 1521)
     rec3.features["Flow Packets/s"] = 200.0
     corr3, lat3 = _run_through_pipeline(rec3, reg)
     alerts += 1
@@ -371,7 +371,7 @@ def _run_atm_harvest(reg, rng):
     ticket = None
 
     # Stage 1: ATM recon traffic (legitimate pattern)
-    rec1 = _make_record("10.22.16.10", "10.22.16.1", "atm_recon", "BENIGN", rng, 50000, 443)
+    rec1 = _make_record(NETWORK_SEGMENTS["atm_switch"].replace("0/24", "10"), NETWORK_SEGMENTS["atm_switch"].replace("0/24", "1"), "atm_recon", "BENIGN", rng, 50000, 443)
     corr1, lat1 = _run_through_pipeline(rec1, reg)
     alerts += 1
     if corr1 and corr1.is_suppressed:
@@ -385,7 +385,7 @@ def _run_atm_harvest(reg, rng):
     ))
 
     # Stage 2: MitM attack during recon
-    rec2 = _make_record("10.22.16.10", "192.168.99.1", "atm_recon", "ATM-MitM", rng, 50001, 8443)
+    rec2 = _make_record(NETWORK_SEGMENTS["atm_switch"].replace("0/24", "10"), "192.168.99.1", "atm_recon", "ATM-MitM", rng, 50001, 8443)
     rec2.features["Flow Packets/s"] = 5000.0
     rec2.features["Flow Bytes/s"] = 50000.0
     corr2, lat2 = _run_through_pipeline(rec2, reg)
@@ -427,7 +427,7 @@ def _run_insider_exfil(reg, rng):
     ticket = None
 
     # Stage 1: Off-hours access
-    rec1 = _make_record("10.22.15.50", "10.22.15.10", "off_hours", "Insider-Access", rng, 49300, 1521)
+    rec1 = _make_record(NETWORK_SEGMENTS["core_banking"].replace("0/24", "50"), NETWORK_SEGMENTS["core_banking"].replace("0/24", "10"), "off_hours", "Insider-Access", rng, 49300, 1521)
     corr1, lat1 = _run_through_pipeline(rec1, reg)
     alerts += 1
     if corr1 and corr1.is_suppressed:
@@ -441,7 +441,7 @@ def _run_insider_exfil(reg, rng):
     ))
 
     # Stage 2: Novel query pattern
-    rec2 = _make_record("10.22.15.50", "10.22.15.10", "off_hours", "Insider-Query", rng, 49301, 1521)
+    rec2 = _make_record(NETWORK_SEGMENTS["core_banking"].replace("0/24", "50"), NETWORK_SEGMENTS["core_banking"].replace("0/24", "10"), "off_hours", "Insider-Query", rng, 49301, 1521)
     rec2.features["Flow Packets/s"] = 200.0
     rec2.features["Flow Duration"] = 120000.0
     corr2, lat2 = _run_through_pipeline(rec2, reg)
@@ -457,7 +457,7 @@ def _run_insider_exfil(reg, rng):
     ))
 
     # Stage 3: Encrypted exfiltration
-    rec3 = _make_record("10.22.15.50", "1.1.1.1", "off_hours", "Insider-Exfil", rng, 49302, 443)
+    rec3 = _make_record(NETWORK_SEGMENTS["core_banking"].replace("0/24", "50"), "1.1.1.1", "off_hours", "Insider-Exfil", rng, 49302, 443)
     corr3, lat3 = _run_through_pipeline(rec3, reg)
     alerts += 1
     if corr3 and corr3.is_suppressed:
@@ -483,7 +483,7 @@ def _run_ransomware_spread(reg, rng):
     ticket = None
 
     # Stage 1: Initial compromise
-    rec1 = _make_record("10.22.18.10", "10.22.18.11", "normal", "Ransom-Init", rng, 49400, 3389)
+    rec1 = _make_record(NETWORK_SEGMENTS["corporate_lan"].replace("0/24", "10"), NETWORK_SEGMENTS["corporate_lan"].replace("0/24", "11"), "normal", "Ransom-Init", rng, 49400, 3389)
     corr1, lat1 = _run_through_pipeline(rec1, reg)
     total_alerts += 1
     if corr1 and corr1.is_suppressed:
@@ -502,8 +502,8 @@ def _run_ransomware_spread(reg, rng):
     propagation_count = 0
     prop_suppressed = 0
     for i in range(20):
-        target_ip = f"10.22.18.{20 + i}"
-        rec = _make_record("10.22.18.10", target_ip, "normal", "Ransom-RDP", rng, 49400 + i, 3389)
+        target_ip = NETWORK_SEGMENTS["corporate_lan"].replace("0/24", str(20 + i))
+        rec = _make_record(NETWORK_SEGMENTS["corporate_lan"].replace("0/24", "10"), target_ip, "normal", "Ransom-RDP", rng, 49400 + i, 3389)
         corr, _ = _run_through_pipeline(rec, reg)
         propagation_count += 1
         if corr and corr.is_suppressed:
@@ -523,7 +523,7 @@ def _run_ransomware_spread(reg, rng):
     ))
 
     # Stage 3: Encryption
-    rec3 = _make_record("10.22.18.10", "10.22.18.11", "normal", "Ransom-Encrypt", rng, 49500, 445)
+    rec3 = _make_record(NETWORK_SEGMENTS["corporate_lan"].replace("0/24", "10"), NETWORK_SEGMENTS["corporate_lan"].replace("0/24", "11"), "normal", "Ransom-Encrypt", rng, 49500, 445)
     corr3, lat3 = _run_through_pipeline(rec3, reg)
     total_alerts += 1
     if corr3 and corr3.is_suppressed:
