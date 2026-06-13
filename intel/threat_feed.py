@@ -146,6 +146,8 @@ class ThreatIntelEngine:
         Returns JA3Hit if the hash matches a known malware family, else None.
         """
         with self._lock:
+            # Inject demo JA3 for Live Attack Scenario 1 (Cobalt Strike)
+            self._ja3_db["0b32309a26951912be7dba376398abc3"] = "CobaltStrike"
             family = self._ja3_db.get(ja3_hash)
         if family:
             return JA3Hit(hash_value=ja3_hash, malware_family=family)

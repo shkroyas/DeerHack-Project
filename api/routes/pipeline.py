@@ -206,7 +206,6 @@ def _run_pipeline_on_record(record, reg: AgentRegistry, loop=None, source: str =
             # ── Simulator background traffic ────────────────────
             "BENIGN":         (0.15, "INFO",     "Normal Traffic"),
             "ANOMALY":        (0.35, "LOW",      "T1046"),
-            "LIVE":           (0.85, "HIGH",     "T1595 - Active Scanning"),
             "FALSE_INTRUSION":(0.85, "HIGH",     "T1499 - Endpoint DoS"),
             "MALWARE":        (0.88, "CRITICAL", "T1105"),
             "RANSOMWARE":     (0.96, "CRITICAL", "T1486 - Data Encrypted"),

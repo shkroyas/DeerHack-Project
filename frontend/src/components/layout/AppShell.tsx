@@ -19,10 +19,13 @@ export const AppShell: React.FC = () => {
         sourceIp: payload.src_ip || "Unknown",
         destinationIp: payload.dst_ip || "Unknown",
         severity: payload.priority || "LOW",
-        mitre: payload.campaign_ticket_id || "Unknown",
+        mitre: payload.mitre_technique || payload.campaign_ticket_id || "Unknown",
         agents: payload.agents_fired || [],
         crs: payload.crs || 0.0,
-        challenge: payload.challenge
+        challenge: payload.challenge,
+        label: payload.label,
+        is_suppressed: payload.is_suppressed,
+        suppression_reason: payload.suppression_reason
       });
     }
   }, [addAlert]);

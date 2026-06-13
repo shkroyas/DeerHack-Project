@@ -70,7 +70,7 @@ const RedTeamPage: React.FC = () => {
   const [loadedScenarios, setLoadedScenarios] = useState(false);
   const [mode, setMode] = useState<'live' | 'simulated'>('live');
   const [listeningScenario, setListeningScenario] = useState<ScenarioInfo | null>(null);
-  
+
   React.useEffect(() => {
     fetch(`http://${window.location.hostname}:8000/pipeline/mode`, {
       method: 'POST',
@@ -78,7 +78,7 @@ const RedTeamPage: React.FC = () => {
       body: JSON.stringify({ mode: mode })
     }).catch(console.error);
   }, [mode]);
-  
+
   const allAlerts = useAlertStore((state) => state.alerts);
 
   const loadScenarios = async () => {
@@ -130,7 +130,7 @@ const RedTeamPage: React.FC = () => {
 
     setActiveResult(prev => {
       const prevStages = prev?.stages || [];
-      
+
       // Map new alerts to stage events
       const newStages = newAlerts.map((a, i) => ({
         stage_index: prevStages.length + i,
@@ -154,7 +154,7 @@ const RedTeamPage: React.FC = () => {
         stages: allStages,
         total_detection_time_sec: elapsedSec,
         alerts_generated: (prev?.alerts_generated || 0) + newAlerts.length,
-        alerts_after_suppression: (prev?.alerts_after_suppression || 0) + newAlerts.length,
+        alerts_after_suppression: (prev?.alerts_after_suppression || 0) + newAlerts.filter(a => !a.is_suppressed).length,
         campaign_ticket_id: newAlerts[0]?.mitre || prev?.campaign_ticket_id || null,
         success: true
       };
@@ -163,9 +163,9 @@ const RedTeamPage: React.FC = () => {
 
   const runScenario = async (scenario: ScenarioInfo) => {
     if (mode === 'live') {
-        setListeningScenario(scenario);
-        setActiveResult(null); // Clear previous
-        return;
+      setListeningScenario(scenario);
+      setActiveResult(null); // Clear previous
+      return;
     }
 
     setLoading(scenario.id);
@@ -203,12 +203,12 @@ const RedTeamPage: React.FC = () => {
         {/* Live vs Simulated Toggle */}
         <div className="flex items-center gap-2 bg-background-elevated px-3 py-1.5 rounded-full border border-background-border/50">
           <span className={`text-xs uppercase font-bold tracking-widest cursor-pointer ${mode === 'live' ? 'text-red-400' : 'text-text-muted'}`} onClick={() => { setMode('live'); setListeningScenario(null); setActiveResult(null); }}>Live Attack</span>
-          <div 
-            className="w-8 h-4 bg-background-darker rounded-full relative cursor-pointer" 
+          <div
+            className="w-8 h-4 bg-background-darker rounded-full relative cursor-pointer"
             onClick={() => {
-                setMode(prev => prev === 'live' ? 'simulated' : 'live');
-                setListeningScenario(null);
-                setActiveResult(null);
+              setMode(prev => prev === 'live' ? 'simulated' : 'live');
+              setListeningScenario(null);
+              setActiveResult(null);
             }}
           >
             <div className={`absolute top-[2px] left-[2px] w-3 h-3 rounded-full bg-white transition-all duration-300 ${mode === 'simulated' ? 'translate-x-4' : ''}`} />
@@ -218,14 +218,14 @@ const RedTeamPage: React.FC = () => {
       </div>
 
       {listeningScenario && mode === 'live' && !activeResult && (
-          <div className="p-4 border border-red-500/30 bg-red-500/5 rounded-lg flex flex-col items-center justify-center space-y-3 animate-pulse">
-              <div className="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-              <div className="text-sm font-bold text-red-400">Listening for Attack Traffic...</div>
-              <div className="text-xs text-text-muted text-center max-w-md">
-                  Run <span className="font-mono text-white bg-background-darker px-1 rounded">./attack_parrot.sh {window.location.hostname}</span> on your attacker machine and select scenario <span className="font-bold text-white">{listeningScenario.id}</span>.
-              </div>
-              <button onClick={() => setListeningScenario(null)} className="text-[10px] text-text-secondary hover:text-white underline mt-2">Cancel</button>
+        <div className="p-4 border border-red-500/30 bg-red-500/5 rounded-lg flex flex-col items-center justify-center space-y-3 animate-pulse">
+          <div className="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+          <div className="text-sm font-bold text-red-400">Listening for Attack Traffic...</div>
+          <div className="text-xs text-text-muted text-center max-w-md">
+            Run <span className="font-mono text-white bg-background-darker px-1 rounded">./attack_parrot.sh {window.location.hostname}</span> on your attacker machine and select scenario <span className="font-bold text-white">{listeningScenario.id}</span>.
           </div>
+          <button onClick={() => setListeningScenario(null)} className="text-[10px] text-text-secondary hover:text-white underline mt-2">Cancel</button>
+        </div>
       )}
 
       {/* Scenario Cards */}
@@ -273,11 +273,10 @@ const RedTeamPage: React.FC = () => {
               <button
                 onClick={() => runScenario(s)}
                 disabled={loading !== null || isListening}
-                className={`w-full py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
-                  isRunning || isListening
+                className={`w-full py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all ${isRunning || isListening
                     ? 'bg-background-elevated text-text-muted cursor-wait'
                     : 'btn-danger hover:shadow-glow-red'
-                } disabled:opacity-40`}
+                  } disabled:opacity-40`}
               >
                 {isRunning ? (
                   <>
@@ -285,7 +284,7 @@ const RedTeamPage: React.FC = () => {
                     Running Pipeline...
                   </>
                 ) : isListening ? (
-                    <>
+                  <>
                     <div className="w-3 h-3 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
                     Listening...
                   </>

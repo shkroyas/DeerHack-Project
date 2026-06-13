@@ -9,7 +9,10 @@ export const AlertSchema = z.object({
   mitre: z.string().optional(),
   agents: z.array(z.string()),
   crs: z.number(),
-  challenge: z.enum(['C1','C2','C3','C4']).optional()
+  challenge: z.enum(['C1','C2','C3','C4']).optional(),
+  label: z.string().optional(),
+  is_suppressed: z.boolean().optional(),
+  suppression_reason: z.string().optional()
 });
 
 export const AlertListSchema = z.object({
